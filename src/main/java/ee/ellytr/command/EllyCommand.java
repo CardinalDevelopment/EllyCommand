@@ -16,6 +16,7 @@
  */
 package ee.ellytr.command;
 
+import com.google.common.collect.Lists;
 import lombok.Getter;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -37,7 +38,8 @@ public class EllyCommand extends org.bukkit.command.Command {
   public EllyCommand(String[] aliases, String description, String[] permissions, int min, int max, Class[] args, CommandExecutor executor) {
     super(aliases[0], description, null, Arrays.asList(aliases));
 
-    this.aliases = Arrays.asList(aliases);
+    this.aliases = Lists.newArrayList(aliases);
+    this.aliases.remove(getName());
     this.description = description;
     this.permissions = permissions;
     this.min = min;

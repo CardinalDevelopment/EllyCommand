@@ -17,10 +17,12 @@
 package ee.ellytr.command;
 
 import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.Lists;
 import ee.ellytr.command.exception.CommandException;
 import ee.ellytr.command.exception.CommandPermissionsException;
 import ee.ellytr.command.provider.ArgumentProvider;
 import ee.ellytr.command.provider.CommandProviders;
+import org.apache.commons.lang.Validate;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -45,9 +47,9 @@ public class CommandFactory {
   }
 
   private List<Method> findCommands(Class clazz) {
-    List<Method> methods = new ArrayList<>();
+    List<Method> methods = Lists.newArrayList();
     for (Method method : clazz.getDeclaredMethods()) {
-      if (method.getAnnotation(Command.class) != null && Modifier.isStatic(method.getModifiers()) && method.getReturnType().equals(Boolean.class)) {
+      if (method.getAnnotation(Command.class) != null && Modifier.isStatic(method.getModifiers()) && method.getReturnType().equals(boolean.class)) {
         methods.add(method);
       }
     }
@@ -55,7 +57,6 @@ public class CommandFactory {
   }
 
   private EllyCommand registerCommand(Method method) {
-    Logger.getLogger("EllyCommand").info("hi command");
     Command command = method.getAnnotation(Command.class);
     EllyCommand cmd = new EllyCommand(command.aliases(), command.description(), command.permissions(), command.min(), command.max(), command.args(), registry.getExecutor());
     registry.getCommandMap().register(registry.getPlugin().getName(), cmd);
@@ -63,29 +64,35 @@ public class CommandFactory {
   }
 
   public boolean execute(EllyCommand command, CommandContext cmd) throws CommandException {
-    for (String permission : command.getPermissions()) {
-      if (!cmd.getSender().hasPermission(permission)) {
-        throw new CommandPermissionsException();
+    Validate.notNull(command);
+    if (command.getPermissions() != null) {
+      for (String permission : command.getPermissions()) {
+        if (!cmd.getSender().hasPermission(permission)) {
+          throw new CommandPermissionsException();
+        }
       }
     }
 
     Method method = commands.inverse().get(command);
 
     Class[] classArgs = command.getArgs();
-    Object[] parameters = new Object[classArgs.length];
+    Object[] parameters = new Object[classArgs.length + 1];
+    parameters[0] = cmd;
     String[] args = cmd.getArgs();
-    for (int i = 0; i < classArgs.length; i ++) {
+
+    for (int i = 0; i < classArgs.length; i++) {
       if (i < args.length) {
-        parameters[i] = providers.getProvider(classArgs[i]).getMatch(args[i]);
+        parameters[i + 1] = providers.getProvider(classArgs[i]).getMatch(args[i]);
       } else {
-        parameters[i] = null;
+        parameters[i + 1] = null;
       }
     }
 
+
     try {
-      return (Boolean) method.invoke(null, parameters);
+      return (boolean) method.invoke(null, parameters);
     } catch (IllegalAccessException | InvocationTargetException e) {
-      Logger.getLogger("EllyCommand").severe("Could not invoke command \"" + command.getAliases().get(0) + "\"");
+      Logger.getLogger("EllyCommand").severe("Could not invoke command \"" + command.getName() + "\"");
       e.printStackTrace();
     }
     return false;
@@ -97,10 +104,8 @@ public class CommandFactory {
 
   protected EllyCommand getCommand(String name) {
     for (EllyCommand command : commands.values()) {
-      for (String alias : command.getAliases()) {
-        if (alias.equalsIgnoreCase(name)) {
-          return command;
-        }
+      if (command.getName().equalsIgnoreCase(name)) {
+        return command;
       }
     }
     return null;

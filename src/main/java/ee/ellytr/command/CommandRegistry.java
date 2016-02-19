@@ -16,6 +16,8 @@
  */
 package ee.ellytr.command;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import ee.ellytr.command.provider.ArgumentProvider;
 import ee.ellytr.command.provider.providers.BooleanProvider;
 import ee.ellytr.command.provider.providers.ByteProvider;
@@ -46,7 +48,6 @@ public class CommandRegistry {
   private CommandExecutor executor;
   private List<Class> registered;
   private HashMap<ArgumentProvider, Class> providers;
-  private CommandMap fallbackCommands;
 
   public CommandRegistry(Plugin plugin) {
     this(plugin, plugin);
@@ -55,14 +56,13 @@ public class CommandRegistry {
   public CommandRegistry(Plugin plugin, CommandExecutor executor) {
     this.plugin = plugin;
     this.executor = executor;
-    registered = new ArrayList<>();
-    providers = new HashMap<>();
+    registered = Lists.newArrayList();
+    providers = Maps.newHashMap();
 
     addDefaultProviders();
   }
 
   public void addClass(Class clazz) {
-    Logger.getLogger("EllyCommand").info("hi" + clazz.getSimpleName());
     registered.add(clazz);
   }
 
@@ -71,7 +71,6 @@ public class CommandRegistry {
   }
 
   public CommandManager register() {
-    Logger.getLogger("EllyCommand").info("hi register");
     CommandFactory factory = new CommandFactory(this, registered);
     providers.forEach(factory::addProvider);
     return new CommandManager(factory);
@@ -89,17 +88,7 @@ public class CommandRegistry {
   }
 
   public CommandMap getCommandMap() {
-    CommandMap commandMap = ReflectionUtil.getField(plugin.getServer().getPluginManager(), "commandMap");
-    if (commandMap == null) {
-      if (fallbackCommands != null) {
-        commandMap = fallbackCommands;
-      } else {
-        Logger.getLogger("EllyCommand").severe("Could not find plugin CommandMap, using fallback instead");
-        fallbackCommands = commandMap = new SimpleCommandMap(Bukkit.getServer());
-        Bukkit.getServer().getPluginManager().registerEvents(new FallbackRegistrationListener(fallbackCommands), plugin);
-      }
-    }
-    return commandMap;
+    return plugin.getServer().getCommandMap();
   }
 
 }

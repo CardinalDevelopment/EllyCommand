@@ -11,32 +11,19 @@ group 'ee.ellytr.command'
 version '1.0-SNAPSHOT'
 
 apply plugin: 'java'
+apply plugin: 'maven'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-configurations {
-    shade
-    compile.extendsFrom shade
-}
-
 repositories {
     jcenter()
-    mavenLocal()
+    maven { url 'https://repo.oc.tc/content/groups/public/' }
 }
 
 dependencies {
     compile 'org.projectlombok:lombok:1.16.6'
-    shade 'org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT'
-    shade 'org.spigotmc:spigot:1.8.8-R0.1-SNAPSHOT'
-}
-
-jar {
-    from {
-        (configurations.compile - configurations.shade).collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
-    }
+    compile 'tc.oc:sportbukkit-api:1.8.7-R0.1-SNAPSHOT'
 }
 
 apply plugin: 'license'
@@ -47,15 +34,5 @@ license {
 
     mapping {
         java = 'SLASHSTAR_STYLE'
-    }
-}
-
-apply plugin: 'maven'
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository(url: "file://localhost/tmp/myRepo/")
-        }
     }
 }

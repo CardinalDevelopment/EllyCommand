@@ -16,19 +16,13 @@
  */
 package ee.ellytr.command.provider;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
+import com.google.common.collect.Maps;
 
 import java.util.HashMap;
 
-@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class CommandProviders {
 
-  private HashMap<Class, ArgumentProvider> providers;
-
-  public CommandProviders() {
-    providers = new HashMap<>();
-  }
+  private HashMap<Class, ArgumentProvider> providers = Maps.newHashMap();
 
   public <T> void addProvider(ArgumentProvider<T> provider, Class<T> clazz) {
     providers.put(clazz, provider);
