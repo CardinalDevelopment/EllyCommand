@@ -16,16 +16,18 @@
  */
 package ee.ellytr.command.provider.providers;
 
+import com.google.common.collect.Lists;
 import ee.ellytr.command.provider.ArgumentProvider;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class BooleanProvider implements ArgumentProvider<Boolean> {
 
   @Override
   public List<String> getSuggestions(String in) {
-    return Arrays.asList("on", "off");
+    List<String> values = Lists.newArrayList("on", "off");
+    return values.stream().filter(value -> value.toLowerCase().startsWith(in.toLowerCase())).collect(Collectors.toList());
   }
 
   @Override

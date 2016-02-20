@@ -19,29 +19,35 @@ package ee.ellytr.command;
 import com.google.common.collect.Multimap;
 import ee.ellytr.command.util.Commands;
 import lombok.Getter;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.PluginIdentifiableCommand;
+import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
 @Getter
-public class EllyCommand extends org.bukkit.command.Command {
+public class EllyCommand extends org.bukkit.command.Command implements PluginIdentifiableCommand {
 
 
   private Multimap<CommandInfo, Method> methods;
-  private final CommandExecutor executor;
+  private final Plugin plugin;
 
-  public EllyCommand(Multimap<CommandInfo, Method> methods, CommandExecutor executor) {
+  public EllyCommand(Multimap<CommandInfo, Method> methods, Plugin plugin) {
     super(Commands.getName(methods.keySet()), Commands.getDescription(methods.keySet()), Commands.getUsageString(methods), Arrays.asList(Commands.getAliases(methods.keySet())));
 
     this.methods = methods;
-    this.executor = executor;
+    this.plugin = plugin;
+
   }
 
   @Override
   public boolean execute(CommandSender sender, String label, String[] args) {
-    return executor.onCommand(sender, this, label, args);
+    return plugin.onCommand(sender, this, label, args);
   }
 
+  @Override
+  public Plugin getPlugin() {
+    return plugin;
+  }
 }

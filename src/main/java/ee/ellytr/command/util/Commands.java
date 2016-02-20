@@ -18,6 +18,7 @@ package ee.ellytr.command.util;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import ee.ellytr.command.Command;
 import ee.ellytr.command.CommandInfo;
 
 import java.lang.reflect.Method;
@@ -27,6 +28,14 @@ public class Commands {
 
   public static String getName(Set<CommandInfo> info) {
     return Lists.newArrayList(info).get(0).getAliases()[0];
+  }
+
+  public static String getName(Method method) {
+    Command command = method.getAnnotation(Command.class);
+    if (command != null) {
+      return command.aliases()[0];
+    }
+    return null;
   }
 
   public static String getDescription(Set<CommandInfo> info) {
