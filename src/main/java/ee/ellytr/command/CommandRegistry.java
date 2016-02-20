@@ -17,78 +17,37 @@
 package ee.ellytr.command;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import ee.ellytr.command.provider.ArgumentProvider;
-import ee.ellytr.command.provider.providers.BooleanProvider;
-import ee.ellytr.command.provider.providers.ByteProvider;
-import ee.ellytr.command.provider.providers.CharacterProvider;
-import ee.ellytr.command.provider.providers.DoubleProvider;
-import ee.ellytr.command.provider.providers.FloatProvider;
-import ee.ellytr.command.provider.providers.IntegerProvider;
-import ee.ellytr.command.provider.providers.LongProvider;
-import ee.ellytr.command.provider.providers.ShortProvider;
-import ee.ellytr.command.util.ReflectionUtil;
+import ee.ellytr.command.provider.ProviderRegistry;
 import lombok.Getter;
-import org.bukkit.Bukkit;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandMap;
-import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.plugin.Plugin;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Logger;
 
+@Getter
 public class CommandRegistry {
 
-  @Getter
-  private Plugin plugin;
-  @Getter
-  private CommandExecutor executor;
-  private List<Class> registered;
-  private HashMap<ArgumentProvider, Class> providers;
+  private final Plugin plugin;
+  private final List<Class> classes;
+  private final ProviderRegistry providerRegistry;
+  private final CommandFactory factory;
 
   public CommandRegistry(Plugin plugin) {
-    this(plugin, plugin);
-  }
-
-  public CommandRegistry(Plugin plugin, CommandExecutor executor) {
     this.plugin = plugin;
-    this.executor = executor;
-    registered = Lists.newArrayList();
-    providers = Maps.newHashMap();
-
-    addDefaultProviders();
+    classes = Lists.newArrayList();
+    providerRegistry = new ProviderRegistry();
+    factory = new CommandFactory(this);
   }
 
   public void addClass(Class clazz) {
-    registered.add(clazz);
+    classes.add(clazz);
   }
 
-  public <T> void addProvider(ArgumentProvider<T> provider, Class<T> clazz) {
-    providers.put(provider, clazz);
+  public void removeClass(Class clazz) {
+    classes.remove(clazz);
   }
 
-  public CommandManager register() {
-    CommandFactory factory = new CommandFactory(this, registered);
-    providers.forEach(factory::addProvider);
-    return new CommandManager(factory);
-  }
-
-  private void addDefaultProviders() {
-    addProvider(new BooleanProvider(), Boolean.class);
-    addProvider(new ByteProvider(), Byte.class);
-    addProvider(new CharacterProvider(), Character.class);
-    addProvider(new DoubleProvider(), Double.class);
-    addProvider(new FloatProvider(), Float.class);
-    addProvider(new IntegerProvider(), Integer.class);
-    addProvider(new LongProvider(), Long.class);
-    addProvider(new ShortProvider(), Short.class);
-  }
-
-  public CommandMap getCommandMap() {
-    return plugin.getServer().getCommandMap();
+  public void register() {
+    factory.build();
   }
 
 }

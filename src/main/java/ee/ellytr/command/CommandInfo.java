@@ -14,23 +14,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
-package ee.ellytr.command.util;
+package ee.ellytr.command;
 
-import java.lang.reflect.Field;
+import lombok.Data;
 
-public class ReflectionUtil {
+@Data
+public class CommandInfo {
 
-  @SuppressWarnings("unchecked")
-  public static <T> T getField(Object from, String name) {
-    Class<?> checkClass = from.getClass();
-    do {
-      try {
-        Field field = checkClass.getDeclaredField(name);
-        field.setAccessible(true);
-        return (T) field.get(from);
-      } catch (NoSuchFieldException | IllegalAccessException ignored) { }
-    } while (checkClass.getSuperclass() != Object.class && ((checkClass = checkClass.getSuperclass()) != null));
-    return null;
-  }
+  private final String[] aliases;
+  private final String description;
+  private final String[] permissions;
+  private final int min;
+  private final int max;
 
 }

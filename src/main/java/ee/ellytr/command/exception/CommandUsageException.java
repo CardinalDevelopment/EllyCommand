@@ -14,20 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
-package ee.ellytr.command;
+package ee.ellytr.command.exception;
 
-import ee.ellytr.command.exception.CommandException;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import org.bukkit.command.CommandSender;
-
-@AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class CommandManager {
-
-  private CommandFactory factory;
-
-  public boolean execute(String name, CommandSender sender, String[] args) throws CommandException {
-    return factory.execute(factory.getCommand(name), new CommandContext(sender, args));
-  }
-
+public class CommandUsageException extends CommandException {
 }

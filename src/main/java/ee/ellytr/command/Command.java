@@ -30,6 +30,5 @@ public @interface Command {
   String[] permissions() default {};
   int min() default 0;
   int max() default Integer.MAX_VALUE;
-  Class[] args() default {};
 
 }

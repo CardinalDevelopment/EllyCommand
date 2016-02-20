@@ -16,94 +16,76 @@
  */
 package ee.ellytr.command;
 
-import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Lists;
-import ee.ellytr.command.exception.CommandException;
-import ee.ellytr.command.exception.CommandPermissionsException;
-import ee.ellytr.command.provider.ArgumentProvider;
-import ee.ellytr.command.provider.CommandProviders;
-import org.apache.commons.lang.Validate;
+import lombok.Getter;
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.Plugin;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
+@Getter
 public class CommandFactory {
 
   private final CommandRegistry registry;
-  private final CommandProviders providers;
-  private final ImmutableBiMap<Method, EllyCommand> commands;
+  private final CommandExecutor executor;
+  private final List<EllyCommand> commands;
 
-  protected CommandFactory(CommandRegistry registry, List<Class> classes) {
+  protected CommandFactory(CommandRegistry registry) {
     this.registry = registry;
-    this.providers = new CommandProviders();
-
-    ImmutableBiMap.Builder<Method, EllyCommand> builder = new ImmutableBiMap.Builder<>();
-    classes.forEach(clazz -> findCommands(clazz).forEach(method -> builder.put(method, registerCommand(method))));
-    commands = builder.build();
+    executor = new CommandExecutor(this);
+    commands = Lists.newArrayList();
   }
 
-  private List<Method> findCommands(Class clazz) {
-    List<Method> methods = Lists.newArrayList();
-    for (Method method : clazz.getDeclaredMethods()) {
-      if (method.getAnnotation(Command.class) != null && Modifier.isStatic(method.getModifiers()) && method.getReturnType().equals(boolean.class)) {
-        methods.add(method);
-      }
-    }
-    return methods;
-  }
-
-  private EllyCommand registerCommand(Method method) {
-    Command command = method.getAnnotation(Command.class);
-    EllyCommand cmd = new EllyCommand(command.aliases(), command.description(), command.permissions(), command.min(), command.max(), command.args(), registry.getExecutor());
-    registry.getCommandMap().register(registry.getPlugin().getName(), cmd);
-    return cmd;
-  }
-
-  public boolean execute(EllyCommand command, CommandContext cmd) throws CommandException {
-    Validate.notNull(command);
-    if (command.getPermissions() != null) {
-      for (String permission : command.getPermissions()) {
-        if (!cmd.getSender().hasPermission(permission)) {
-          throw new CommandPermissionsException();
+  public void build() {
+    registry.getClasses().forEach(clazz -> {
+      findCommands(clazz).forEach(methods -> {
+        ImmutableMultimap.Builder<CommandInfo, Method> builder = ImmutableMultimap.builder();
+        Command commandAnn = methods.get(0).getAnnotation(Command.class);
+        for (Method method : methods) {
+          AlternateCommand altCommandAnn = method.getAnnotation(AlternateCommand.class);
+          CommandInfo info;
+          if (altCommandAnn != null) {
+            info = new CommandInfo(commandAnn.aliases(), commandAnn.description(), altCommandAnn.permissions(), altCommandAnn.min(), altCommandAnn.max());
+          } else {
+            info = new CommandInfo(commandAnn.aliases(), commandAnn.description(), commandAnn.permissions(), commandAnn.min(), commandAnn.max());
+          }
+          builder.put(info, method);
         }
-      }
-    }
-
-    Method method = commands.inverse().get(command);
-
-    Class[] classArgs = command.getArgs();
-    Object[] parameters = new Object[classArgs.length + 1];
-    parameters[0] = cmd;
-    String[] args = cmd.getArgs();
-
-    for (int i = 0; i < classArgs.length; i++) {
-      if (i < args.length) {
-        parameters[i + 1] = providers.getProvider(classArgs[i]).getMatch(args[i]);
-      } else {
-        parameters[i + 1] = null;
-      }
-    }
-
-
-    try {
-      return (boolean) method.invoke(null, parameters);
-    } catch (IllegalAccessException | InvocationTargetException e) {
-      Logger.getLogger("EllyCommand").severe("Could not invoke command \"" + command.getName() + "\"");
-      e.printStackTrace();
-    }
-    return false;
+        Plugin plugin = registry.getPlugin();
+        EllyCommand command = new EllyCommand(builder.build(), plugin);
+        Bukkit.getCommandMap().register(plugin.getName(), command);
+        commands.add(command);
+      });
+    });
   }
 
-  protected <T> void addProvider(ArgumentProvider<T> provider, Class<T> clazz) {
-    providers.addProvider(provider, clazz);
+  public List<List<Method>> findCommands(Class clazz) {
+    List<List<Method>> commands = Lists.newArrayList();
+    for (Method method : clazz.getDeclaredMethods()) {
+      Class[] parameters = method.getParameterTypes();
+      Command info = method.getAnnotation(Command.class);
+      if (info != null
+              && Modifier.isStatic(method.getModifiers())
+              && method.getReturnType().equals(boolean.class)
+              && parameters.length > 0 && parameters[0].equals(CommandContext.class)) {
+        commands.add(Lists.newArrayList(method));
+      }
+    }
+    for (Method method : clazz.getDeclaredMethods()) {
+      commands.forEach(methods -> {
+        if (methods.get(0).getName().equals(method.getName())) {
+          methods.add(method);
+        }
+      });
+    }
+    return commands;
   }
 
-  protected EllyCommand getCommand(String name) {
-    for (EllyCommand command : commands.values()) {
+  public EllyCommand getCommand(String name) {
+    for (EllyCommand command : commands) {
       if (command.getName().equalsIgnoreCase(name)) {
         return command;
       }

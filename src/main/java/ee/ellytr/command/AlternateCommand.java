@@ -16,26 +16,17 @@
  */
 package ee.ellytr.command;
 
-import org.bukkit.command.CommandMap;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-/**
- * @author zml2008
- */
-public class FallbackRegistrationListener implements Listener {
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface AlternateCommand {
 
-  private final CommandMap commandRegistration;
+  String[] permissions() default {};
+  int min() default 0;
+  int max() default Integer.MAX_VALUE;
 
-  public FallbackRegistrationListener(CommandMap commandRegistration) {
-    this.commandRegistration = commandRegistration;
-  }
-
-  @EventHandler(ignoreCancelled = true)
-  public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
-    if (commandRegistration.dispatch(event.getPlayer(), event.getMessage())) {
-      event.setCancelled(true);
-    }
-  }
 }

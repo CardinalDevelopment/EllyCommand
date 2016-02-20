@@ -16,46 +16,32 @@
  */
 package ee.ellytr.command;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
+import ee.ellytr.command.util.Commands;
 import lombok.Getter;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.List;
 
 @Getter
 public class EllyCommand extends org.bukkit.command.Command {
 
-  private final List<String> aliases;
-  private final String description;
-  private final String[] permissions;
-  private final int min;
-  private final int max;
-  private final Class[] args;
+
+  private Multimap<CommandInfo, Method> methods;
   private final CommandExecutor executor;
 
-  public EllyCommand(String[] aliases, String description, String[] permissions, int min, int max, Class[] args, CommandExecutor executor) {
-    super(aliases[0], description, null, Arrays.asList(aliases));
+  public EllyCommand(Multimap<CommandInfo, Method> methods, CommandExecutor executor) {
+    super(Commands.getName(methods.keySet()), Commands.getDescription(methods.keySet()), Commands.getUsageString(methods), Arrays.asList(Commands.getAliases(methods.keySet())));
 
-    this.aliases = Lists.newArrayList(aliases);
-    this.aliases.remove(getName());
-    this.description = description;
-    this.permissions = permissions;
-    this.min = min;
-    this.max = max;
-    this.args = args;
+    this.methods = methods;
     this.executor = executor;
-
-    String usage = "/" + aliases[0];
-    for (Class clazz : args) {
-      usage += " <" + clazz.getSimpleName().toLowerCase() + ">";
-    }
-    this.setUsage(usage);
   }
 
   @Override
   public boolean execute(CommandSender sender, String label, String[] args) {
     return executor.onCommand(sender, this, label, args);
   }
+
 }
