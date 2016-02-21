@@ -20,6 +20,7 @@ import com.google.common.collect.Multimap;
 import ee.ellytr.command.exception.CommandException;
 import ee.ellytr.command.exception.CommandUsageException;
 import ee.ellytr.command.provider.ArgumentProvider;
+import ee.ellytr.command.util.Commands;
 import lombok.Data;
 import org.bukkit.command.CommandSender;
 
@@ -52,12 +53,18 @@ public class CommandExecutor {
     Object[] parameters = null;
     for (CommandInfo info : applicableCommands) {
       for (Method currentMethod : methods.get(info)) {
+        boolean valid = true;
         Class[] parameterTypes = currentMethod.getParameterTypes();
         int currentNullParameters = 0;
         Object[] currentParameters = new Object[parameterTypes.length];
         currentParameters[0] = cmd;
         for (int i = 1; i < parameterTypes.length; i++) {
+          boolean required = Commands.isRequiredParameter(currentMethod.getParameterAnnotations()[i]);
           if (i > argsLength) {
+            if (required) {
+              valid = false;
+              break;
+            }
             currentNullParameters++;
             currentParameters[i] = null;
             continue;
@@ -68,14 +75,22 @@ public class CommandExecutor {
             Object parameter = provider.getMatch(args[i - 1]);
             currentParameters[i] = parameter;
             if (parameter == null) {
+              if (required) {
+                valid = false;
+                break;
+              }
               currentNullParameters++;
             }
           } catch (Exception e) {
+            if (required) {
+              valid = false;
+              break;
+            }
             currentNullParameters++;
             currentParameters[i] = null;
           }
         }
-        if (currentNullParameters < nullParameters) {
+        if (currentNullParameters < nullParameters && valid) {
           method = currentMethod;
           nullParameters = currentNullParameters;
           parameters = currentParameters;

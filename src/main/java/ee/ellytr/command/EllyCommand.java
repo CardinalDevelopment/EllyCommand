@@ -29,9 +29,9 @@ import java.util.Arrays;
 @Getter
 public class EllyCommand extends org.bukkit.command.Command implements PluginIdentifiableCommand {
 
-
   private Multimap<CommandInfo, Method> methods;
   private final Plugin plugin;
+
 
   public EllyCommand(Multimap<CommandInfo, Method> methods, Plugin plugin) {
     super(Commands.getName(methods.keySet()), Commands.getDescription(methods.keySet()), Commands.getUsageString(methods), Arrays.asList(Commands.getAliases(methods.keySet())));

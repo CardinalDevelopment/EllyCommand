@@ -20,7 +20,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import ee.ellytr.command.Command;
 import ee.ellytr.command.CommandInfo;
+import ee.ellytr.command.Optional;
+import ee.ellytr.command.Required;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Set;
 
@@ -54,7 +57,7 @@ public class Commands {
         }
         Class[] parameters = method.getParameterTypes();
         for (int i = 1; i < parameters.length; i ++) {
-          if (i <= info.getMin()) {
+          if (i <= info.getMin() || Commands.isRequiredParameter(method.getParameterAnnotations()[i])) {
             usage += " <" + parameters[i].getSimpleName() + ">";
           } else {
             usage += " [" + parameters[i].getSimpleName() + "]";
@@ -67,6 +70,18 @@ public class Commands {
 
   public static String[] getAliases(Set<CommandInfo> info) {
     return Lists.newArrayList(info).get(0).getAliases();
+  }
+
+  public static boolean isRequiredParameter(Annotation[] annotations) {
+    for (Annotation annotation : annotations) {
+      if (annotation.annotationType().equals(Optional.class)) {
+        return false;
+      }
+      if (annotation.annotationType().equals(Required.class)) {
+        return true;
+      }
+    }
+    return true;
   }
 
 }
