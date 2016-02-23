@@ -16,21 +16,27 @@
  */
 package ee.ellytr.command;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import ee.ellytr.command.util.Commands;
 import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginIdentifiableCommand;
 import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.List;
 
 @Getter
+@Setter
 public class EllyCommand extends org.bukkit.command.Command implements PluginIdentifiableCommand {
 
-  private Multimap<CommandInfo, Method> methods;
+  private final Multimap<CommandInfo, Method> methods;
   private final Plugin plugin;
+  private final List<EllyCommand> nestedCommands;
+  private CommandTabCompleter tabCompleter;
 
 
   public EllyCommand(Multimap<CommandInfo, Method> methods, Plugin plugin) {
@@ -38,7 +44,7 @@ public class EllyCommand extends org.bukkit.command.Command implements PluginIde
 
     this.methods = methods;
     this.plugin = plugin;
-
+    nestedCommands = Lists.newArrayList();
   }
 
   @Override
@@ -49,5 +55,9 @@ public class EllyCommand extends org.bukkit.command.Command implements PluginIde
   @Override
   public Plugin getPlugin() {
     return plugin;
+  }
+
+  public void addNestedCommand(EllyCommand nestedCommand) {
+    nestedCommands.add(nestedCommand);
   }
 }

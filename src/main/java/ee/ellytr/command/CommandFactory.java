@@ -20,7 +20,6 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Lists;
 import ee.ellytr.command.util.Commands;
 import lombok.Getter;
-import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.Plugin;
 
@@ -48,46 +47,36 @@ public class CommandFactory {
   public void build() {
     registry.getClasses().forEach(clazz -> {
       findCommands(clazz).forEach(methods -> {
-        ImmutableMultimap.Builder<CommandInfo, Method> builder = ImmutableMultimap.builder();
-        Command commandAnn = methods.get(0).getAnnotation(Command.class);
-        for (Method method : methods) {
-          Command methodCommandAnn = method.getAnnotation(Command.class);
-          AlternateCommand altCommandAnn = method.getAnnotation(AlternateCommand.class);
-          CommandInfo info;
-          if (altCommandAnn != null) {
-            info = new CommandInfo(commandAnn.aliases(), commandAnn.description(), altCommandAnn.permissions(), altCommandAnn.min(), altCommandAnn.max());
-          } else {
-            if (methodCommandAnn != null) {
-              info = new CommandInfo(commandAnn.aliases(), commandAnn.description(), methodCommandAnn.permissions(), methodCommandAnn.min(), methodCommandAnn.max());
-            } else {
-              info = new CommandInfo(commandAnn.aliases(), commandAnn.description(), commandAnn.permissions(), commandAnn.min(), commandAnn.max());
-            }
-          }
-          builder.put(info, method);
-        }
-
-        ImmutableMultimap<CommandInfo, Method> commandMethods = builder.build();
-        Plugin plugin = registry.getPlugin();
-
-        EllyCommand ellyCommand = new EllyCommand(commandMethods, plugin);
+        EllyCommand ellyCommand = getCommand(methods);
         commands.add(ellyCommand);
         try {
           Constructor constructor = Class.forName(PluginCommand.class.getName()).getDeclaredConstructor(String.class, Plugin.class);
           constructor.setAccessible(true);
+          Plugin plugin = registry.getPlugin();
           PluginCommand command = (PluginCommand) constructor.newInstance(ellyCommand.getName(), plugin);
           command.setAliases(ellyCommand.getAliases());
           command.setDescription(ellyCommand.getDescription());
           command.setExecutor(plugin);
           command.setUsage(ellyCommand.getUsage());
-          command.setTabCompleter(new CommandTabCompleter(this, ellyCommand));
+          command.setTabCompleter(ellyCommand.getTabCompleter());
 
-          Bukkit.getCommandMap().register(command.getName(), command);
+          Commands.getCommandMap().register(command.getName(), command);
         } catch (NoSuchMethodException | ClassNotFoundException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
           Logger.getLogger("EllyCommand").warning("Could not register PluginCommand for command \"" + ellyCommand.getName() + "\"");
           e.printStackTrace();
         }
       });
     });
+    for (EllyCommand command : commands) {
+      for (Method method : command.getMethods().values()) {
+        NestedCommands nestedCommandsAnn = method.getAnnotation(NestedCommands.class);
+        if (nestedCommandsAnn != null) {
+          for (Class clazz : nestedCommandsAnn.value()) {
+            findCommands(clazz).forEach(methods -> command.addNestedCommand(getCommand(methods)));
+          }
+        }
+      }
+    }
   }
 
   public List<List<Method>> findCommands(Class clazz) {
@@ -138,6 +127,32 @@ public class CommandFactory {
       }
     }
     return null;
+  }
+
+  public EllyCommand getCommand(List<Method> methods) {
+    ImmutableMultimap.Builder<CommandInfo, Method> builder = ImmutableMultimap.builder();
+    Command commandAnn = methods.get(0).getAnnotation(Command.class);
+    for (Method method : methods) {
+      Command methodCommandAnn = method.getAnnotation(Command.class);
+      AlternateCommand altCommandAnn = method.getAnnotation(AlternateCommand.class);
+      CommandInfo info;
+      if (altCommandAnn != null) {
+        info = new CommandInfo(commandAnn.aliases(), commandAnn.description(), altCommandAnn.permissions(), altCommandAnn.min(), altCommandAnn.max());
+      } else {
+        if (methodCommandAnn != null) {
+          info = new CommandInfo(commandAnn.aliases(), commandAnn.description(), methodCommandAnn.permissions(), methodCommandAnn.min(), methodCommandAnn.max());
+        } else {
+          info = new CommandInfo(commandAnn.aliases(), commandAnn.description(), commandAnn.permissions(), commandAnn.min(), commandAnn.max());
+        }
+      }
+      builder.put(info, method);
+    }
+
+    ImmutableMultimap<CommandInfo, Method> commandMethods = builder.build();
+    Plugin plugin = registry.getPlugin();
+    EllyCommand command = new EllyCommand(commandMethods, plugin);
+    command.setTabCompleter(new CommandTabCompleter(this, command));
+    return command;
   }
 
 }

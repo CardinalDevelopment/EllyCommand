@@ -20,11 +20,15 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import ee.ellytr.command.Command;
 import ee.ellytr.command.CommandInfo;
+import ee.ellytr.command.EllyCommand;
 import ee.ellytr.command.Optional;
 import ee.ellytr.command.Required;
+import org.bukkit.Bukkit;
+import org.bukkit.command.CommandMap;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Set;
 
 public class Commands {
@@ -82,6 +86,19 @@ public class Commands {
       }
     }
     return true;
+  }
+
+  public static EllyCommand getCommand(Collection<EllyCommand> commands, String name) {
+    for (EllyCommand command : commands) {
+      if (command.getName().equalsIgnoreCase(name)) {
+        return command;
+      }
+    }
+    return null;
+  }
+
+  public static CommandMap getCommandMap() {
+    return ReflectionUtil.getField(Bukkit.getPluginManager(), "commandMap");
   }
 
 }

@@ -14,26 +14,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
-package ee.ellytr.command.provider.providers;
+package ee.ellytr.command;
 
-import com.google.common.collect.Lists;
-import ee.ellytr.command.provider.ArgumentProvider;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import java.util.List;
-import java.util.stream.Collectors;
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface NestedCommands {
 
-public class BooleanProvider implements ArgumentProvider<Boolean> {
-
-  @Override
-  public List<String> getSuggestions(String in) {
-    List<String> values = Lists.newArrayList("on", "off", "true", "false");
-    return values.stream().filter(value -> value.toLowerCase().startsWith(in.toLowerCase())).collect(Collectors.toList());
-  }
-
-  @Override
-  public Boolean getMatch(String in) {
-    return in.equalsIgnoreCase("on") || in.equalsIgnoreCase("true");
-  }
+  Class<?>[] value();
 
 }
-

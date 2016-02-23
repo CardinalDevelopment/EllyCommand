@@ -14,26 +14,26 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
-package ee.ellytr.command.provider.providers;
+package ee.ellytr.command.util;
 
-import com.google.common.collect.Lists;
-import ee.ellytr.command.provider.ArgumentProvider;
+import java.lang.reflect.Field;
 
-import java.util.List;
-import java.util.stream.Collectors;
+public class ReflectionUtil {
 
-public class BooleanProvider implements ArgumentProvider<Boolean> {
-
-  @Override
-  public List<String> getSuggestions(String in) {
-    List<String> values = Lists.newArrayList("on", "off", "true", "false");
-    return values.stream().filter(value -> value.toLowerCase().startsWith(in.toLowerCase())).collect(Collectors.toList());
-  }
-
-  @Override
-  public Boolean getMatch(String in) {
-    return in.equalsIgnoreCase("on") || in.equalsIgnoreCase("true");
+  /*
+   * Author: zml2008
+   */
+  @SuppressWarnings("unchecked")
+  public static <T> T getField(Object from, String name) {
+    Class<?> checkClass = from.getClass();
+    do {
+      try {
+        Field field = checkClass.getDeclaredField(name);
+        field.setAccessible(true);
+        return (T) field.get(from);
+      } catch (NoSuchFieldException | IllegalAccessException ignored) { }
+    } while (checkClass.getSuperclass() != Object.class && ((checkClass = checkClass.getSuperclass()) != null));
+    return null;
   }
 
 }
-

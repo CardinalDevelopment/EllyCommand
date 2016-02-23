@@ -16,6 +16,7 @@
  */
 package ee.ellytr.command;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import ee.ellytr.command.exception.CommandException;
 import ee.ellytr.command.exception.CommandUsageException;
@@ -36,10 +37,30 @@ public class CommandExecutor {
   private final CommandFactory factory;
 
   public void execute(String name, CommandSender sender, String[] args) throws CommandException {
-    EllyCommand command = factory.getCommand(name);
+    execute(factory.getCommand(name), sender, args);
+  }
+
+  public void execute(EllyCommand command, CommandSender sender, String[] args) throws CommandException {
+    int argsLength = args.length;
+
+    List<EllyCommand> nestedCommands = command.getNestedCommands();
+    if (!nestedCommands.isEmpty() && args.length > 0) {
+      EllyCommand nestedCommand = Commands.getCommand(nestedCommands, args[0]);
+      if (nestedCommand != null) {
+        List<String> newArgsList = Lists.newArrayList(args);
+        newArgsList.remove(0);
+        int size = newArgsList.size();
+        String[] newArgs = new String[size];
+        for (int i = 0; i < size; i++) {
+          newArgs[i] = newArgsList.get(i);
+        }
+        execute(nestedCommand, sender, newArgs);
+        return;
+      }
+    }
+
     Multimap<CommandInfo, Method> methods = command.getMethods();
 
-    int argsLength = args.length;
     List<CommandInfo> applicableCommands = methods.keySet().stream().filter(info -> argsLength >= info.getMin() && argsLength <= info.getMax()).collect(Collectors.toList());
 
     if (applicableCommands.isEmpty()) {
@@ -99,8 +120,7 @@ public class CommandExecutor {
     }
 
     if (method == null) {
-      Logger.getLogger("EllyCommand").severe("Could not retrieve method for command \"" + command.getName() + "\"");
-      return;
+      throw new CommandUsageException();
     }
     try {
       method.invoke(null, parameters);
