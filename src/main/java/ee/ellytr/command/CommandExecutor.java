@@ -19,6 +19,7 @@ package ee.ellytr.command;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import ee.ellytr.command.exception.CommandException;
+import ee.ellytr.command.exception.CommandPermissionsException;
 import ee.ellytr.command.exception.CommandUsageException;
 import ee.ellytr.command.provider.ArgumentProvider;
 import ee.ellytr.command.util.Commands;
@@ -72,8 +73,8 @@ public class CommandExecutor {
     Method method = null;
     int nullParameters = Integer.MAX_VALUE;
     Object[] parameters = null;
-    for (CommandInfo info : applicableCommands) {
-      for (Method currentMethod : methods.get(info)) {
+    for (CommandInfo currentInfo : applicableCommands) {
+      for (Method currentMethod : methods.get(currentInfo)) {
         boolean valid = true;
         Class[] parameterTypes = currentMethod.getParameterTypes();
         int currentNullParameters = 0;
@@ -122,6 +123,13 @@ public class CommandExecutor {
     if (method == null) {
       throw new CommandUsageException();
     }
+
+    for (String permission : factory.getPermissions(command)) {
+      if (!sender.hasPermission(permission)) {
+        throw new CommandPermissionsException();
+      }
+    }
+
     try {
       method.invoke(null, parameters);
     } catch (IllegalAccessException | InvocationTargetException e) {

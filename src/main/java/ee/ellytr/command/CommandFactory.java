@@ -30,6 +30,7 @@ import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @Getter
 public class CommandFactory {
@@ -153,6 +154,26 @@ public class CommandFactory {
     EllyCommand command = new EllyCommand(commandMethods, plugin);
     command.setTabCompleter(new CommandTabCompleter(this, command));
     return command;
+  }
+
+  public List<EllyCommand> getParentCommands(EllyCommand nestedCommand) {
+    return commands.stream().filter(command -> command.getNestedCommands().contains(nestedCommand)).collect(Collectors.toList());
+  }
+
+  public List<String> getPermissions(EllyCommand command) {
+    List<String> permissions = Lists.newArrayList();
+    for (CommandInfo info : command.getMethods().keySet()) {
+      for (String permission : info.getPermissions()) {
+        permissions.add(permission);
+      }
+    }
+    List<EllyCommand> parents = getParentCommands(command);
+    if (!parents.isEmpty()) {
+      for (EllyCommand parent : parents) {
+        permissions.addAll(getPermissions(parent));
+      }
+    }
+    return permissions;
   }
 
 }
