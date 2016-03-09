@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package ee.ellytr.command.util;
 
 import java.lang.reflect.Field;
@@ -31,7 +32,8 @@ public class ReflectionUtil {
         Field field = checkClass.getDeclaredField(name);
         field.setAccessible(true);
         return (T) field.get(from);
-      } catch (NoSuchFieldException | IllegalAccessException ignored) { }
+      } catch (NoSuchFieldException | IllegalAccessException ignored) {
+      }
     } while (checkClass.getSuperclass() != Object.class && ((checkClass = checkClass.getSuperclass()) != null));
     return null;
   }

@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package ee.ellytr.command.provider.providers;
 
 import com.google.common.collect.Lists;
@@ -25,14 +26,14 @@ import java.util.stream.Collectors;
 public class BooleanProvider implements ArgumentProvider<Boolean> {
 
   @Override
-  public List<String> getSuggestions(String in) {
-    List<String> values = Lists.newArrayList("on", "off", "true", "false");
-    return values.stream().filter(value -> value.toLowerCase().startsWith(in.toLowerCase())).collect(Collectors.toList());
+  public Boolean getMatch(String in) {
+    return in.equalsIgnoreCase("on") || in.equalsIgnoreCase("true");
   }
 
   @Override
-  public Boolean getMatch(String in) {
-    return in.equalsIgnoreCase("on") || in.equalsIgnoreCase("true");
+  public List<String> getSuggestions(String in) {
+    List<String> values = Lists.newArrayList("on", "off", "true", "false");
+    return values.stream().filter(value -> value.toLowerCase().startsWith(in.toLowerCase())).collect(Collectors.toList());
   }
 
 }

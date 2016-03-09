@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package ee.ellytr.command;
 
 import com.google.common.collect.ImmutableMultimap;
@@ -27,6 +28,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
@@ -45,6 +47,9 @@ public class CommandFactory {
     commands = Lists.newArrayList();
   }
 
+  /**
+   * Builds the commands by finding the command methods in each class and registering them in the Bukkit command map.
+   */
   public void build() {
     registry.getClasses().forEach(clazz -> {
       findCommands(clazz).forEach(methods -> {
@@ -62,7 +67,8 @@ public class CommandFactory {
           command.setTabCompleter(ellyCommand.getTabCompleter());
 
           Commands.getCommandMap().register(command.getName(), command);
-        } catch (NoSuchMethodException | ClassNotFoundException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+        } catch (NoSuchMethodException | ClassNotFoundException | IllegalAccessException | InstantiationException
+                | InvocationTargetException e) {
           Logger.getLogger("EllyCommand").warning("Could not register PluginCommand for command \"" + ellyCommand.getName() + "\"");
           e.printStackTrace();
         }
@@ -80,6 +86,13 @@ public class CommandFactory {
     }
   }
 
+  /**
+   * Gets a list of methods that represent commands within a specified class. The methods are grouped by command name,
+   * so if two methods refer to the same command name they will be within the same sub-list.
+   *
+   * @param clazz The class that is to be looked through for command methods
+   * @return The grouped list of commands found in the class
+   */
   public List<List<Method>> findCommands(Class clazz) {
     List<List<Method>> commands = Lists.newArrayList();
     List<Method> classMethods = Lists.newArrayList(clazz.getDeclaredMethods());
@@ -121,15 +134,12 @@ public class CommandFactory {
     return commands;
   }
 
-  public EllyCommand getCommand(String name) {
-    for (EllyCommand command : commands) {
-      if (command.getName().equalsIgnoreCase(name)) {
-        return command;
-      }
-    }
-    return null;
-  }
-
+  /**
+   * Gets a command based on a list of methods with the same name given by the command annotation.
+   *
+   * @param methods The list of methods that share a command.
+   * @return The command that is built from the method list.
+   */
   public EllyCommand getCommand(List<Method> methods) {
     ImmutableMultimap.Builder<CommandInfo, Method> builder = ImmutableMultimap.builder();
     Command commandAnn = methods.get(0).getAnnotation(Command.class);
@@ -138,12 +148,15 @@ public class CommandFactory {
       AlternateCommand altCommandAnn = method.getAnnotation(AlternateCommand.class);
       CommandInfo info;
       if (altCommandAnn != null) {
-        info = new CommandInfo(commandAnn.aliases(), commandAnn.description(), altCommandAnn.permissions(), altCommandAnn.min(), altCommandAnn.max());
+        info = new CommandInfo(commandAnn.aliases(), commandAnn.description(), altCommandAnn.permissions(),
+                altCommandAnn.min(), altCommandAnn.max());
       } else {
         if (methodCommandAnn != null) {
-          info = new CommandInfo(commandAnn.aliases(), commandAnn.description(), methodCommandAnn.permissions(), methodCommandAnn.min(), methodCommandAnn.max());
+          info = new CommandInfo(commandAnn.aliases(), commandAnn.description(), methodCommandAnn.permissions(),
+                  methodCommandAnn.min(), methodCommandAnn.max());
         } else {
-          info = new CommandInfo(commandAnn.aliases(), commandAnn.description(), commandAnn.permissions(), commandAnn.min(), commandAnn.max());
+          info = new CommandInfo(commandAnn.aliases(), commandAnn.description(), commandAnn.permissions(),
+                  commandAnn.min(), commandAnn.max());
         }
       }
       builder.put(info, method);
@@ -156,22 +169,70 @@ public class CommandFactory {
     return command;
   }
 
-  public List<EllyCommand> getParentCommands(EllyCommand nestedCommand) {
-    return commands.stream().filter(command -> command.getNestedCommands().contains(nestedCommand)).collect(Collectors.toList());
-  }
-
-  public List<String> getPermissions(EllyCommand command) {
-    List<String> permissions = Lists.newArrayList();
-    for (CommandInfo info : command.getMethods().keySet()) {
-      for (String permission : info.getPermissions()) {
-        permissions.add(permission);
+  /**
+   * Gets a command based on a given name.
+   *
+   * @param name The name to get the command by
+   * @return The command found with the specified name
+   */
+  public EllyCommand getCommand(String name) {
+    for (EllyCommand command : commands) {
+      if (command.getName().equalsIgnoreCase(name)) {
+        return command;
       }
     }
+    return null;
+  }
+
+  public EllyCommand getCommand(Method method) {
+    for (EllyCommand command : commands) {
+      if (command.getMethods().values().contains(method)) {
+        return command;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Gets a parent command by searching through the commands for the nested command.
+   *
+   * @param nestedCommand The command to get the parent of.
+   * @return The parent of the nested command.
+   */
+  public List<EllyCommand> getParentCommands(EllyCommand nestedCommand) {
+    return commands.stream().filter(command -> command.getNestedCommands().contains(nestedCommand))
+            .collect(Collectors.toList());
+  }
+
+  /**
+   * Gets the list of permissions for a command method.
+   *
+   * @param method The command method to get the permissions of.
+   * @return The list of permissions for this command method.
+   */
+  public List<String> getPermissions(Method method) {
+    List<String> permissions = Lists.newArrayList();
+    EllyCommand command = getCommand(method);
+    command.getMethods().keySet().stream().filter(info -> command.getMethods().get(info).contains(method)).forEach(info -> permissions.addAll(Arrays.asList(info.getPermissions())));
     List<EllyCommand> parents = getParentCommands(command);
     if (!parents.isEmpty()) {
       for (EllyCommand parent : parents) {
         permissions.addAll(getPermissions(parent));
       }
+    }
+    return permissions;
+  }
+
+  /**
+   * Gets the list of permissions for a command.
+   *
+   * @param command The command to get the permissions of.
+   * @return The list of permissions for this command.
+   */
+  public List<String> getPermissions(EllyCommand command) {
+    List<String> permissions = Lists.newArrayList();
+    for (Method method : command.getMethods().values()) {
+      permissions.addAll(getPermissions(method));
     }
     return permissions;
   }

@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package ee.ellytr.command.provider.providers;
 
 import ee.ellytr.command.provider.ArgumentProvider;
@@ -23,13 +24,13 @@ import java.util.List;
 public class FloatProvider implements ArgumentProvider<Float> {
 
   @Override
-  public List<String> getSuggestions(String in) {
-    return null;
+  public Float getMatch(String in) {
+    return Float.parseFloat(in);
   }
 
   @Override
-  public Float getMatch(String in) {
-    return Float.parseFloat(in);
+  public List<String> getSuggestions(String in) {
+    return null;
   }
 
 }

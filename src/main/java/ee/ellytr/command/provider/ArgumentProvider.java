@@ -14,13 +14,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package ee.ellytr.command.provider;
 
 import java.util.List;
 
 public interface ArgumentProvider<T> {
 
-  List<String> getSuggestions(String in);
   T getMatch(String in);
+
+  List<String> getSuggestions(String in);
 
 }

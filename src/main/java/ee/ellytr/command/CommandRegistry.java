@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package ee.ellytr.command;
 
 import com.google.common.collect.Lists;
@@ -31,6 +32,11 @@ public class CommandRegistry {
   private final ProviderRegistry providerRegistry;
   private final CommandFactory factory;
 
+  /**
+   * This is a registry that manages the classes that contain the command methods
+   *
+   * @param plugin The plugin that is using EllyCommand
+   */
   public CommandRegistry(Plugin plugin) {
     this.plugin = plugin;
     classes = Lists.newArrayList();
@@ -38,16 +44,29 @@ public class CommandRegistry {
     factory = new CommandFactory(this);
   }
 
+  /**
+   * Adds a class to the registry
+   *
+   * @param clazz The class to be added
+   */
   public void addClass(Class clazz) {
     classes.add(clazz);
   }
 
-  public void removeClass(Class clazz) {
-    classes.remove(clazz);
-  }
-
+  /**
+   * Builds the commands from the classes in the registry using an instance of CommandFactory
+   */
   public void register() {
     factory.build();
+  }
+
+  /**
+   * Removes a class from the registry
+   *
+   * @param clazz The class to be removed
+   */
+  public void removeClass(Class clazz) {
+    classes.remove(clazz);
   }
 
 }

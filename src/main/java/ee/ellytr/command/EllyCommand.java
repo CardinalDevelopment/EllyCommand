@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package ee.ellytr.command;
 
 import com.google.common.collect.Lists;
@@ -38,26 +39,44 @@ public class EllyCommand extends org.bukkit.command.Command implements PluginIde
   private final List<EllyCommand> nestedCommands;
   private CommandTabCompleter tabCompleter;
 
-
+  /**
+   * A class to keep track of the command. While registered, this is not actually registered in the Bukkit command map
+   *
+   * @param methods The map of command information to a specific method, as commands can have more than one method with
+   *                varying information, such as argument length and permissions
+   * @param plugin  The plugin that is used in the {@link CommandRegistry} and {@link CommandFactory}
+   */
   public EllyCommand(Multimap<CommandInfo, Method> methods, Plugin plugin) {
-    super(Commands.getName(methods.keySet()), Commands.getDescription(methods.keySet()), Commands.getUsageString(methods), Arrays.asList(Commands.getAliases(methods.keySet())));
+    super(Commands.getName(methods.keySet()), Commands.getDescription(methods.keySet()),
+            Commands.getUsageString(methods), Arrays.asList(Commands.getAliases(methods.keySet())));
 
     this.methods = methods;
     this.plugin = plugin;
     nestedCommands = Lists.newArrayList();
   }
 
+  /**
+   * Adds a nested command within this command, which would be already specified by the factory
+   *
+   * @param nestedCommand The nested command to add
+   */
+  public void addNestedCommand(EllyCommand nestedCommand) {
+    nestedCommands.add(nestedCommand);
+  }
+
+  /**
+   * An inherited method that is ran when the command is executed
+   */
   @Override
   public boolean execute(CommandSender sender, String label, String[] args) {
     return plugin.onCommand(sender, this, label, args);
   }
 
+  /**
+   * @return The plugin that this command is using
+   */
   @Override
   public Plugin getPlugin() {
     return plugin;
-  }
-
-  public void addNestedCommand(EllyCommand nestedCommand) {
-    nestedCommands.add(nestedCommand);
   }
 }

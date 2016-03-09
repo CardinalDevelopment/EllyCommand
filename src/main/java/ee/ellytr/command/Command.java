@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package ee.ellytr.command;
 
 import java.lang.annotation.ElementType;
@@ -26,9 +27,13 @@ import java.lang.annotation.Target;
 public @interface Command {
 
   String[] aliases();
+
   String description();
-  String[] permissions() default {};
-  int min() default 0;
+
   int max() default Integer.MAX_VALUE;
+
+  int min() default 0;
+
+  String[] permissions() default {};
 
 }

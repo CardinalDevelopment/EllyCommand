@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package ee.ellytr.command.provider.providers;
 
 import ee.ellytr.command.provider.ArgumentProvider;
@@ -23,13 +24,13 @@ import java.util.List;
 public class ByteProvider implements ArgumentProvider<Byte> {
 
   @Override
-  public List<String> getSuggestions(String in) {
-    return null;
+  public Byte getMatch(String in) {
+    return Byte.parseByte(in);
   }
 
   @Override
-  public Byte getMatch(String in) {
-    return Byte.parseByte(in);
+  public List<String> getSuggestions(String in) {
+    return null;
   }
 
 }

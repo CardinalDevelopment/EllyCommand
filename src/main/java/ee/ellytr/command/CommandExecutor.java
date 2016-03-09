@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package ee.ellytr.command;
 
 import com.google.common.collect.Lists;
@@ -37,10 +38,26 @@ public class CommandExecutor {
 
   private final CommandFactory factory;
 
+  /**
+   * Executes a command.
+   *
+   * @param name   The name of the command.
+   * @param sender The sender of the command.
+   * @param args   The arguments specified with this command.
+   * @throws CommandException Thrown in the nested execute command.
+   */
   public void execute(String name, CommandSender sender, String[] args) throws CommandException {
     execute(factory.getCommand(name), sender, args);
   }
 
+  /**
+   * Executes a command.
+   *
+   * @param command The command to be executed.
+   * @param sender  The sender of this command.
+   * @param args    The arguments specified with this command.
+   * @throws CommandException Thrown if there is any user-specified issues with the command and its execution.
+   */
   public void execute(EllyCommand command, CommandSender sender, String[] args) throws CommandException {
     int argsLength = args.length;
 
@@ -124,7 +141,7 @@ public class CommandExecutor {
       throw new CommandUsageException();
     }
 
-    for (String permission : factory.getPermissions(command)) {
+    for (String permission : factory.getPermissions(method)) {
       if (!sender.hasPermission(permission)) {
         throw new CommandPermissionsException();
       }

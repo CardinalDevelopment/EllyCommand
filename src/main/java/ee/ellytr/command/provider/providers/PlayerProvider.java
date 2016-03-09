@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package ee.ellytr.command.provider.providers;
 
 import com.google.common.collect.Lists;
@@ -27,6 +28,16 @@ import java.util.UUID;
 public class PlayerProvider implements ArgumentProvider<Player> {
 
   @Override
+  public Player getMatch(String in) {
+    if (in.startsWith("@")) {
+      return Bukkit.getPlayerExact(in.substring(1));
+    } else if (in.startsWith("#")) {
+      return Bukkit.getPlayer(UUID.fromString(in.substring(1)));
+    }
+    return Bukkit.getPlayer(in);
+  }
+
+  @Override
   public List<String> getSuggestions(String in) {
     List<String> suggestions = Lists.newArrayList();
     for (Player player : Bukkit.getOnlinePlayers()) {
@@ -36,16 +47,6 @@ public class PlayerProvider implements ArgumentProvider<Player> {
       }
     }
     return suggestions;
-  }
-
-  @Override
-  public Player getMatch(String in) {
-    if (in.startsWith("@")) {
-      return Bukkit.getPlayerExact(in.substring(1));
-    } else if (in.startsWith("#")) {
-      return Bukkit.getPlayer(UUID.fromString(in.substring(1)));
-    }
-    return Bukkit.getPlayer(in);
   }
 
 }
