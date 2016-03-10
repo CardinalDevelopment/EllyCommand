@@ -19,13 +19,17 @@ package ee.ellytr.command;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import ee.ellytr.command.exception.CommandConsoleNoUseException;
 import ee.ellytr.command.exception.CommandException;
 import ee.ellytr.command.exception.CommandPermissionsException;
+import ee.ellytr.command.exception.CommandPlayerNoUseException;
 import ee.ellytr.command.exception.CommandUsageException;
 import ee.ellytr.command.provider.ArgumentProvider;
 import ee.ellytr.command.util.Commands;
 import lombok.Data;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.entity.Player;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -87,12 +91,25 @@ public class CommandExecutor {
 
     CommandContext cmd = new CommandContext(sender, args);
 
+    boolean consoleNoUse = false, playerNoUse = false;
     Method method = null;
     int nullParameters = Integer.MAX_VALUE;
     Object[] parameters = null;
     for (CommandInfo currentInfo : applicableCommands) {
       for (Method currentMethod : methods.get(currentInfo)) {
         boolean valid = true;
+
+        boolean console = Commands.isConsoleCommand(currentMethod), player = Commands.isPlayerCommand(currentMethod);
+        if ((console || player) && !((console && sender instanceof ConsoleCommandSender) || (player && sender instanceof Player))) {
+          if (console && !(sender instanceof ConsoleCommandSender)) {
+            consoleNoUse = true;
+          }
+          if (player && !(sender instanceof Player)) {
+            playerNoUse = true;
+          }
+          continue;
+        }
+
         Class[] parameterTypes = currentMethod.getParameterTypes();
         int currentNullParameters = 0;
         Object[] currentParameters = new Object[parameterTypes.length];
@@ -138,6 +155,12 @@ public class CommandExecutor {
     }
 
     if (method == null) {
+      if (consoleNoUse) {
+        throw new CommandConsoleNoUseException();
+      }
+      if (playerNoUse) {
+        throw new CommandPlayerNoUseException();
+      }
       throw new CommandUsageException();
     }
 

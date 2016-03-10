@@ -19,7 +19,15 @@ package ee.ellytr.command.provider;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import ee.ellytr.command.provider.providers.*;
+import ee.ellytr.command.provider.providers.BooleanProvider;
+import ee.ellytr.command.provider.providers.ByteProvider;
+import ee.ellytr.command.provider.providers.CharacterProvider;
+import ee.ellytr.command.provider.providers.DoubleProvider;
+import ee.ellytr.command.provider.providers.FloatProvider;
+import ee.ellytr.command.provider.providers.IntegerProvider;
+import ee.ellytr.command.provider.providers.LongProvider;
+import ee.ellytr.command.provider.providers.PlayerProvider;
+import ee.ellytr.command.provider.providers.ShortProvider;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
