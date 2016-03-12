@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Lists;
 import ee.ellytr.command.util.Commands;
 import lombok.Getter;
+import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.Plugin;
 
@@ -28,6 +29,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -144,22 +146,27 @@ public class CommandFactory {
     ImmutableMultimap.Builder<CommandInfo, Method> builder = ImmutableMultimap.builder();
     Command commandAnn = methods.get(0).getAnnotation(Command.class);
     for (Method method : methods) {
-      Command methodCommandAnn = method.getAnnotation(Command.class);
-      AlternateCommand altCommandAnn = method.getAnnotation(AlternateCommand.class);
-      CommandInfo info;
-      if (altCommandAnn != null) {
-        info = new CommandInfo(commandAnn.aliases(), commandAnn.description(), altCommandAnn.permissions(),
-                altCommandAnn.min(), altCommandAnn.max());
-      } else {
-        if (methodCommandAnn != null) {
-          info = new CommandInfo(commandAnn.aliases(), commandAnn.description(), methodCommandAnn.permissions(),
-                  methodCommandAnn.min(), methodCommandAnn.max());
-        } else {
-          info = new CommandInfo(commandAnn.aliases(), commandAnn.description(), commandAnn.permissions(),
-                  commandAnn.min(), commandAnn.max());
-        }
+      Command methodCommand = method.getAnnotation(Command.class);
+      CommandPermissions commandPermissions = method.getAnnotation(CommandPermissions.class);
+      AlternateCommand alternateCommand = method.getAnnotation(AlternateCommand.class);
+      boolean alternate = alternateCommand != null;
+
+      String[] aliases = (alternate ? commandAnn : methodCommand).aliases();
+      String description = (alternate ? commandAnn : methodCommand).description();
+      List<String> permissions = Lists.newArrayList();
+      if (methodCommand != null) {
+        permissions.addAll(Arrays.asList(methodCommand.permissions()));
       }
-      builder.put(info, method);
+      if (commandPermissions != null) {
+        permissions.addAll(Arrays.asList(commandPermissions.value()));
+      }
+      if (alternate) {
+        permissions.addAll(Arrays.asList(alternateCommand.permissions()));
+      }
+      int min = alternate ? alternateCommand.min() : methodCommand.min();
+      int max = alternate ? alternateCommand.max() : methodCommand.max();
+
+      builder.put(new CommandInfo(aliases, description, permissions.toArray(new String[permissions.size()]), min, max), method);
     }
 
     ImmutableMultimap<CommandInfo, Method> commandMethods = builder.build();
