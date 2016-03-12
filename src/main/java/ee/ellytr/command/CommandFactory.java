@@ -19,6 +19,10 @@ package ee.ellytr.command;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Lists;
+import ee.ellytr.command.command.AlternateCommand;
+import ee.ellytr.command.command.Command;
+import ee.ellytr.command.command.CommandPermissions;
+import ee.ellytr.command.command.NestedCommands;
 import ee.ellytr.command.util.Commands;
 import lombok.Getter;
 import org.bukkit.Bukkit;
@@ -29,7 +33,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -122,10 +125,12 @@ public class CommandFactory {
     for (Method method : clazz.getDeclaredMethods()) {
       commands.forEach(methods -> {
         Method command = methods.get(0);
+        Command methodCommand = method.getAnnotation(Command.class);
         AlternateCommand info = method.getAnnotation(AlternateCommand.class);
         Class[] parameters = method.getParameterTypes();
-        if (command.getName().equals(method.getName())
-                && info != null
+        String name = Commands.getName(method);
+        if (info != null
+                && (command.getName().equals(method.getName()) || (name != null && info.aliases()[0].equalsIgnoreCase(name)))
                 && Modifier.isStatic(method.getModifiers())
                 && method.getReturnType().equals(void.class)
                 && parameters.length > 0 && parameters[0].equals(CommandContext.class)) {
@@ -154,15 +159,15 @@ public class CommandFactory {
       String[] aliases = (alternate ? commandAnn : methodCommand).aliases();
       String description = (alternate ? commandAnn : methodCommand).description();
       List<String> permissions = Lists.newArrayList();
-      if (methodCommand != null) {
+      if (alternate) {
+        permissions.addAll(Arrays.asList(alternateCommand.permissions()));
+      } else {
         permissions.addAll(Arrays.asList(methodCommand.permissions()));
       }
       if (commandPermissions != null) {
         permissions.addAll(Arrays.asList(commandPermissions.value()));
       }
-      if (alternate) {
-        permissions.addAll(Arrays.asList(alternateCommand.permissions()));
-      }
+
       int min = alternate ? alternateCommand.min() : methodCommand.min();
       int max = alternate ? alternateCommand.max() : methodCommand.max();
 
@@ -170,8 +175,7 @@ public class CommandFactory {
     }
 
     ImmutableMultimap<CommandInfo, Method> commandMethods = builder.build();
-    Plugin plugin = registry.getPlugin();
-    EllyCommand command = new EllyCommand(commandMethods, plugin);
+    EllyCommand command = new EllyCommand(commandMethods, registry.getPlugin());
     command.setTabCompleter(new CommandTabCompleter(this, command));
     return command;
   }

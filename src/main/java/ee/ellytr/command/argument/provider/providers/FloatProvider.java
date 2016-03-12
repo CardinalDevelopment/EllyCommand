@@ -15,25 +15,22 @@
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package ee.ellytr.command;
+package ee.ellytr.command.argument.provider.providers;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import ee.ellytr.command.argument.provider.ArgumentProvider;
 
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Command {
+import java.util.List;
 
-  String[] aliases();
+public class FloatProvider implements ArgumentProvider<Float> {
 
-  String description();
+  @Override
+  public Float getMatch(String in) {
+    return Float.parseFloat(in);
+  }
 
-  int max() default Integer.MAX_VALUE;
-
-  int min() default 0;
-
-  String[] permissions() default {};
+  @Override
+  public List<String> getSuggestions(String in) {
+    return null;
+  }
 
 }

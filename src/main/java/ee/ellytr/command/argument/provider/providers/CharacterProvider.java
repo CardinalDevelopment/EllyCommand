@@ -15,17 +15,17 @@
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package ee.ellytr.command.provider.providers;
+package ee.ellytr.command.argument.provider.providers;
 
-import ee.ellytr.command.provider.ArgumentProvider;
+import ee.ellytr.command.argument.provider.ArgumentProvider;
 
 import java.util.List;
 
-public class FloatProvider implements ArgumentProvider<Float> {
+public class CharacterProvider implements ArgumentProvider<Character> {
 
   @Override
-  public Float getMatch(String in) {
-    return Float.parseFloat(in);
+  public Character getMatch(String in) {
+    return in.charAt(0);
   }
 
   @Override
@@ -34,3 +34,4 @@ public class FloatProvider implements ArgumentProvider<Float> {
   }
 
 }
+

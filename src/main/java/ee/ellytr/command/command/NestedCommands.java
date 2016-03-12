@@ -14,7 +14,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
-package ee.ellytr.command;
+
+package ee.ellytr.command.command;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -23,8 +24,8 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface CommandPermissions {
+public @interface NestedCommands {
 
-    String[] value();
+  Class<?>[] value();
 
 }

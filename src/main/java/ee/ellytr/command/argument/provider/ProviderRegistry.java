@@ -15,19 +15,19 @@
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package ee.ellytr.command.provider;
+package ee.ellytr.command.argument.provider;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import ee.ellytr.command.provider.providers.BooleanProvider;
-import ee.ellytr.command.provider.providers.ByteProvider;
-import ee.ellytr.command.provider.providers.CharacterProvider;
-import ee.ellytr.command.provider.providers.DoubleProvider;
-import ee.ellytr.command.provider.providers.FloatProvider;
-import ee.ellytr.command.provider.providers.IntegerProvider;
-import ee.ellytr.command.provider.providers.LongProvider;
-import ee.ellytr.command.provider.providers.PlayerProvider;
-import ee.ellytr.command.provider.providers.ShortProvider;
+import ee.ellytr.command.argument.provider.providers.BooleanProvider;
+import ee.ellytr.command.argument.provider.providers.ByteProvider;
+import ee.ellytr.command.argument.provider.providers.CharacterProvider;
+import ee.ellytr.command.argument.provider.providers.DoubleProvider;
+import ee.ellytr.command.argument.provider.providers.FloatProvider;
+import ee.ellytr.command.argument.provider.providers.IntegerProvider;
+import ee.ellytr.command.argument.provider.providers.LongProvider;
+import ee.ellytr.command.argument.provider.providers.PlayerProvider;
+import ee.ellytr.command.argument.provider.providers.ShortProvider;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;

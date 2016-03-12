@@ -15,17 +15,14 @@
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package ee.ellytr.command;
+package ee.ellytr.command.argument;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target(ElementType.METHOD)
+@Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface NestedCommands {
-
-  Class<?>[] value();
-
+public @interface Required {
 }

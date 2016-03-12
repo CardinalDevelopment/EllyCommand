@@ -19,13 +19,14 @@ package ee.ellytr.command.util;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import ee.ellytr.command.Command;
+import ee.ellytr.command.command.AlternateCommand;
+import ee.ellytr.command.command.Command;
 import ee.ellytr.command.CommandInfo;
-import ee.ellytr.command.ConsoleCommand;
+import ee.ellytr.command.command.ConsoleCommand;
 import ee.ellytr.command.EllyCommand;
-import ee.ellytr.command.Optional;
-import ee.ellytr.command.PlayerCommand;
-import ee.ellytr.command.Required;
+import ee.ellytr.command.argument.Optional;
+import ee.ellytr.command.command.PlayerCommand;
+import ee.ellytr.command.argument.Required;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
 
@@ -61,6 +62,10 @@ public class Commands {
     Command command = method.getAnnotation(Command.class);
     if (command != null) {
       return command.aliases()[0];
+    }
+    AlternateCommand altCommand = method.getAnnotation(AlternateCommand.class);
+    if (altCommand != null) {
+      return altCommand.aliases()[0];
     }
     return null;
   }

@@ -24,7 +24,7 @@ import ee.ellytr.command.exception.CommandException;
 import ee.ellytr.command.exception.CommandPermissionsException;
 import ee.ellytr.command.exception.CommandPlayerNoUseException;
 import ee.ellytr.command.exception.CommandUsageException;
-import ee.ellytr.command.provider.ArgumentProvider;
+import ee.ellytr.command.argument.provider.ArgumentProvider;
 import ee.ellytr.command.util.Commands;
 import lombok.Data;
 import org.bukkit.command.CommandSender;
@@ -91,7 +91,7 @@ public class CommandExecutor {
 
     CommandContext cmd = new CommandContext(sender, args);
 
-    boolean consoleNoUse = false, playerNoUse = false;
+    boolean consoleNoUse = false, playerNoUse = false, noPermission = false;
     Method method = null;
     int nullParameters = Integer.MAX_VALUE;
     Object[] parameters = null;
@@ -107,6 +107,18 @@ public class CommandExecutor {
           if (player && !(sender instanceof Player)) {
             playerNoUse = true;
           }
+          continue;
+        }
+
+        boolean nextMethod = false;
+        for (String permission : factory.getPermissions(currentMethod)) {
+          if (!sender.hasPermission(permission)) {
+            noPermission = true;
+            nextMethod = true;
+            break;
+          }
+        }
+        if (nextMethod) {
           continue;
         }
 
@@ -155,6 +167,9 @@ public class CommandExecutor {
     }
 
     if (method == null) {
+      if (noPermission) {
+        throw new CommandPermissionsException();
+      }
       if (consoleNoUse) {
         throw new CommandConsoleNoUseException();
       }
@@ -162,12 +177,6 @@ public class CommandExecutor {
         throw new CommandPlayerNoUseException();
       }
       throw new CommandUsageException();
-    }
-
-    for (String permission : factory.getPermissions(method)) {
-      if (!sender.hasPermission(permission)) {
-        throw new CommandPermissionsException();
-      }
     }
 
     try {

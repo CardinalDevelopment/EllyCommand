@@ -15,17 +15,17 @@
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package ee.ellytr.command.provider.providers;
+package ee.ellytr.command.argument.provider.providers;
 
-import ee.ellytr.command.provider.ArgumentProvider;
+import ee.ellytr.command.argument.provider.ArgumentProvider;
 
 import java.util.List;
 
-public class ShortProvider implements ArgumentProvider<Short> {
+public class ByteProvider implements ArgumentProvider<Byte> {
 
   @Override
-  public Short getMatch(String in) {
-    return Short.parseShort(in);
+  public Byte getMatch(String in) {
+    return Byte.parseByte(in);
   }
 
   @Override

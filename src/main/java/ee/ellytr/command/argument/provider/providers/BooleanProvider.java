@@ -15,14 +15,26 @@
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package ee.ellytr.command;
+package ee.ellytr.command.argument.provider.providers;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.google.common.collect.Lists;
+import ee.ellytr.command.argument.provider.ArgumentProvider;
 
-@Target(ElementType.PARAMETER)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Required {
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class BooleanProvider implements ArgumentProvider<Boolean> {
+
+  @Override
+  public Boolean getMatch(String in) {
+    return in.equalsIgnoreCase("on") || in.equalsIgnoreCase("true");
+  }
+
+  @Override
+  public List<String> getSuggestions(String in) {
+    List<String> values = Lists.newArrayList("on", "off", "true", "false");
+    return values.stream().filter(value -> value.toLowerCase().startsWith(in.toLowerCase())).collect(Collectors.toList());
+  }
+
 }
+

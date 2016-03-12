@@ -18,7 +18,7 @@
 package ee.ellytr.command;
 
 import com.google.common.collect.Lists;
-import ee.ellytr.command.provider.ProviderRegistry;
+import ee.ellytr.command.argument.provider.ProviderRegistry;
 import lombok.Getter;
 import org.bukkit.plugin.Plugin;
 

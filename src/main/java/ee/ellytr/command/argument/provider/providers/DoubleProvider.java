@@ -15,21 +15,22 @@
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package ee.ellytr.command;
+package ee.ellytr.command.argument.provider.providers;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import ee.ellytr.command.argument.provider.ArgumentProvider;
 
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface AlternateCommand {
+import java.util.List;
 
-  int max() default Integer.MAX_VALUE;
+public class DoubleProvider implements ArgumentProvider<Double> {
 
-  int min() default 0;
+  @Override
+  public Double getMatch(String in) {
+    return Double.parseDouble(in);
+  }
 
-  String[] permissions() default {};
+  @Override
+  public List<String> getSuggestions(String in) {
+    return null;
+  }
 
 }

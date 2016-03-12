@@ -15,14 +15,14 @@
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package ee.ellytr.command;
+package ee.ellytr.command.argument.provider;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.List;
 
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface ConsoleCommand {
+public interface ArgumentProvider<T> {
+
+  T getMatch(String in);
+
+  List<String> getSuggestions(String in);
+
 }

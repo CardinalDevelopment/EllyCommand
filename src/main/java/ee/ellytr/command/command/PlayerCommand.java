@@ -15,22 +15,14 @@
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package ee.ellytr.command.provider.providers;
+package ee.ellytr.command.command;
 
-import ee.ellytr.command.provider.ArgumentProvider;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import java.util.List;
-
-public class ByteProvider implements ArgumentProvider<Byte> {
-
-  @Override
-  public Byte getMatch(String in) {
-    return Byte.parseByte(in);
-  }
-
-  @Override
-  public List<String> getSuggestions(String in) {
-    return null;
-  }
-
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface PlayerCommand {
 }

@@ -15,17 +15,17 @@
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package ee.ellytr.command.provider.providers;
+package ee.ellytr.command.argument.provider.providers;
 
-import ee.ellytr.command.provider.ArgumentProvider;
+import ee.ellytr.command.argument.provider.ArgumentProvider;
 
 import java.util.List;
 
-public class DoubleProvider implements ArgumentProvider<Double> {
+public class LongProvider implements ArgumentProvider<Long> {
 
   @Override
-  public Double getMatch(String in) {
-    return Double.parseDouble(in);
+  public Long getMatch(String in) {
+    return Long.parseLong(in);
   }
 
   @Override

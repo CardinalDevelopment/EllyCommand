@@ -15,22 +15,14 @@
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package ee.ellytr.command.provider.providers;
+package ee.ellytr.command.argument;
 
-import ee.ellytr.command.provider.ArgumentProvider;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import java.util.List;
-
-public class IntegerProvider implements ArgumentProvider<Integer> {
-
-  @Override
-  public Integer getMatch(String in) {
-    return Integer.parseInt(in);
-  }
-
-  @Override
-  public List<String> getSuggestions(String in) {
-    return null;
-  }
-
+@Target(ElementType.PARAMETER)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Optional {
 }
