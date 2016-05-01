@@ -71,7 +71,7 @@ public class CommandFactory {
           command.setUsage(ellyCommand.getUsage());
           command.setTabCompleter(ellyCommand.getTabCompleter());
 
-          Commands.getCommandMap().register(command.getName(), command);
+          Commands.getCommandMap().register(plugin.getName(), command);
         } catch (NoSuchMethodException | ClassNotFoundException | IllegalAccessException | InstantiationException
                 | InvocationTargetException e) {
           Logger.getLogger("EllyCommand").warning("Could not register PluginCommand for command \"" + ellyCommand.getName() + "\"");
