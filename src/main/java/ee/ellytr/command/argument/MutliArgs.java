@@ -7,5 +7,9 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Optional {
+public @interface MutliArgs {
+
+  int min() default 1;
+  int max() default 1;
+
 }
