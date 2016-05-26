@@ -1,10 +1,30 @@
+/*
+ * This file is part of EllyCommand.
+ *
+ * EllyCommand is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * EllyCommand is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package ee.ellytr.command.argument;
 
+import com.google.common.collect.Lists;
+import ee.ellytr.command.CommandInstance;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.bukkit.command.CommandSender;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.List;
 
 @Getter
 @RequiredArgsConstructor
@@ -28,14 +48,54 @@ public class Argument<T> {
     return true;
   }
 
-  public static int[] getMultiArgs(Method method, int parameter) {
+  public static List<Integer> getMultiArgs(Method method, int parameter) {
     for (Annotation annotation : method.getParameterAnnotations()[parameter]) {
-      if (annotation.getClass().equals(MutliArgs.class)) {
-        MutliArgs mutliArgs = method.getParameters()[parameter].getAnnotation(MutliArgs.class);
-        return new int[]{mutliArgs.min(), mutliArgs.max()};
+      if (annotation.getClass().equals(MultiArgs.class)) {
+        MultiArgs multiArgs = method.getParameters()[parameter].getAnnotation(MultiArgs.class);
+        return Lists.newArrayList(multiArgs.min(), multiArgs.max());
       }
     }
-    return new int[]{1, 1};
+    return null;
+  }
+
+  public static List<Object> matchArguments(CommandInstance instance, String[] argsArray, CommandSender sender) {
+    List<Object> matches = Lists.newArrayList();
+
+    List<String> args = Lists.newArrayList(argsArray);
+    List<Argument> arguments = instance.getArguments();
+    for (int i = 0; i < arguments.size(); i ++) {
+      Argument argument = arguments.get(i);
+      boolean required = argument.isRequired();
+
+      String in = args.get(0);
+      int min = argument.getMin(), max = argument.getMax();
+      if (i + 1 == arguments.size() && (min != 1 || max != 1)) {
+        int remaining = args.size();
+        if (min <= remaining && remaining <= max) {
+          StringBuilder inBuilder = new StringBuilder();
+          args.forEach(inBuilder::append);
+          in = inBuilder.toString();
+        } else {
+          matches.add(null);
+          break;
+        }
+      }
+
+      Object match = argument.getProvider().getMatch(in, sender);
+      if (match == null) {
+        if (required) {
+          matches.add(null);
+        } else {
+          matches.add(java.util.Optional.empty());
+        }
+      } else {
+        matches.add(match);
+      }
+
+      args.remove(0);
+    }
+
+    return matches;
   }
 
 }

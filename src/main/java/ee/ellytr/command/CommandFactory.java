@@ -1,3 +1,19 @@
+/*
+ * This file is part of EllyCommand.
+ *
+ * EllyCommand is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * EllyCommand is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package ee.ellytr.command;
 
 import com.google.common.collect.Lists;
@@ -90,9 +106,23 @@ public class CommandFactory {
     Class[] paramters = method.getParameterTypes();
     List<Argument> arguments = Lists.newArrayList();
     for (int i = 1; i < paramters.length; i++) {
-      int[] multiArgs = Argument.getMultiArgs(method, i);
-      arguments.add(new Argument(Argument.isRequired(method.getParameterAnnotations()[i]),
-          multiArgs[0], multiArgs[1], registry.getProviderRegistry().getProvider(paramters[i])));
+      Argument argument;
+      List<Integer> multiArgs = Argument.getMultiArgs(method, i);
+      if (multiArgs != null) {
+        if (i + 1 == paramters.length) {
+          argument = new Argument(Argument.isRequired(method.getParameterAnnotations()[i]),
+              multiArgs.get(0), multiArgs.get(1),
+              registry.getProviderRegistry().getProvider(paramters[i]));
+        } else {
+          Logger.getLogger("EllyCommand").warning("Invalid position of MultiArgs for command");
+          argument = new Argument(Argument.isRequired(method.getParameterAnnotations()[i]), 1, 1,
+              registry.getProviderRegistry().getProvider(paramters[i]));
+        }
+      } else {
+        argument = new Argument(Argument.isRequired(method.getParameterAnnotations()[i]), 1, 1,
+            registry.getProviderRegistry().getProvider(paramters[i]));
+      }
+      arguments.add(argument);
     }
     return arguments;
   }
