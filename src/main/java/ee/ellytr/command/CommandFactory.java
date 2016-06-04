@@ -18,7 +18,10 @@ package ee.ellytr.command;
 
 import com.google.common.collect.Lists;
 import ee.ellytr.command.argument.Argument;
+import ee.ellytr.command.argument.Optional;
 import ee.ellytr.command.util.Collections;
+import ee.ellytr.command.util.Commands;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.Plugin;
@@ -31,11 +34,13 @@ import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+@Getter
 @RequiredArgsConstructor
 public class CommandFactory {
 
   private final CommandRegistry registry;
   private final List<EllyCommand> commands = Lists.newArrayList();
+  private final CommandExecutor executor = new CommandExecutor(this);
 
   protected void build() {
     for (Class clazz : registry.getClasses()) {
@@ -73,6 +78,8 @@ public class CommandFactory {
         pluginCommand.setExecutor(plugin);
         pluginCommand.setTabCompleter(command.getTabCompleter());
         pluginCommand.setUsage(command.getUsage());
+
+        Commands.getCommandMap().register(plugin.getName(), pluginCommand);
       } catch (InstantiationException | InvocationTargetException | IllegalAccessException
           | NoSuchMethodException | ClassNotFoundException e) {
         Logger.getLogger("EllyCommand").severe("Could not register command \"" + command.getName() + "\"");
@@ -82,8 +89,10 @@ public class CommandFactory {
 
   private EllyCommand analyzeCommand(Command command, Method method) {
     List<String> aliases = Lists.newArrayList(command.aliases());
-    CommandInstance instance = new CommandInstance(command.min(), command.max(),
-        command.permissions(), getArguments(method), method);
+    CommandInstance instance = new CommandInstance(command.min(), command.max(), command.permissions(), command.usage(),
+        method.getDeclaredAnnotation(ConsoleCommand.class) != null,
+        method.getDeclaredAnnotation(PlayerCommand.class) != null,
+        getArguments(method), method);
     for (EllyCommand ellyCommand : commands) {
       if (Collections.getIntersection(aliases, ellyCommand.getAliases()).size() >= 1) {
         // Add any additional aliases to the command
@@ -103,24 +112,28 @@ public class CommandFactory {
 
   @SuppressWarnings("unchecked")
   private List<Argument> getArguments(Method method) {
-    Class[] paramters = method.getParameterTypes();
+    Class[] parameters = method.getParameterTypes();
     List<Argument> arguments = Lists.newArrayList();
-    for (int i = 1; i < paramters.length; i++) {
+    for (int i = 1; i < parameters.length; i++) {
       Argument argument;
       List<Integer> multiArgs = Argument.getMultiArgs(method, i);
+      Optional optional = method.getParameters()[i].getAnnotation(Optional.class);
+      String defaultValue = null;
+      if (optional != null) {
+        defaultValue = optional.defaultValue();
+      }
       if (multiArgs != null) {
-        if (i + 1 == paramters.length) {
-          argument = new Argument(Argument.isRequired(method.getParameterAnnotations()[i]),
-              multiArgs.get(0), multiArgs.get(1),
-              registry.getProviderRegistry().getProvider(paramters[i]));
+        if (i + 1 == parameters.length) {
+          argument = new Argument(Argument.isRequired(method.getParameterAnnotations()[i]), defaultValue,
+              multiArgs.get(0), multiArgs.get(1), registry.getProviderRegistry().getProvider(parameters[i]));
         } else {
           Logger.getLogger("EllyCommand").warning("Invalid position of MultiArgs for command");
-          argument = new Argument(Argument.isRequired(method.getParameterAnnotations()[i]), 1, 1,
-              registry.getProviderRegistry().getProvider(paramters[i]));
+          argument = new Argument(Argument.isRequired(method.getParameterAnnotations()[i]), defaultValue,
+              1, 1, registry.getProviderRegistry().getProvider(parameters[i]));
         }
       } else {
-        argument = new Argument(Argument.isRequired(method.getParameterAnnotations()[i]), 1, 1,
-            registry.getProviderRegistry().getProvider(paramters[i]));
+        argument = new Argument(Argument.isRequired(method.getParameterAnnotations()[i]), defaultValue,
+            1, 1, registry.getProviderRegistry().getProvider(parameters[i]));
       }
       arguments.add(argument);
     }
@@ -140,6 +153,10 @@ public class CommandFactory {
       }
     }
     return methods;
+  }
+
+  protected EllyCommand getCommand(String name) {
+    return Collections.getCommand(commands, name);
   }
 
 }

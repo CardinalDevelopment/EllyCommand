@@ -31,6 +31,7 @@ import java.util.List;
 public class Argument<T> {
 
   private final boolean required;
+  private final String defaultValue;
   private final int min;
   private final int max;
 
@@ -38,7 +39,7 @@ public class Argument<T> {
 
   public static boolean isRequired(Annotation[] annotations) {
     for (Annotation annotation : annotations) {
-      Class clazz = annotation.getClass();
+      Class clazz = annotation.annotationType();
       if (clazz.equals(Optional.class)) {
         return false;
       } else if (clazz.equals(Required.class)) {
@@ -50,7 +51,7 @@ public class Argument<T> {
 
   public static List<Integer> getMultiArgs(Method method, int parameter) {
     for (Annotation annotation : method.getParameterAnnotations()[parameter]) {
-      if (annotation.getClass().equals(MultiArgs.class)) {
+      if (annotation.annotationType().equals(MultiArgs.class)) {
         MultiArgs multiArgs = method.getParameters()[parameter].getAnnotation(MultiArgs.class);
         return Lists.newArrayList(multiArgs.min(), multiArgs.max());
       }
@@ -58,41 +59,77 @@ public class Argument<T> {
     return null;
   }
 
-  public static List<Object> matchArguments(CommandInstance instance, String[] argsArray, CommandSender sender) {
+  public static List<Object> matchArguments(CommandInstance instance, String[] argsArray,
+                                            CommandSender sender, boolean includeOptionals, boolean onlyPresentArgs) {
     List<Object> matches = Lists.newArrayList();
 
     List<String> args = Lists.newArrayList(argsArray);
     List<Argument> arguments = instance.getArguments();
+
     for (int i = 0; i < arguments.size(); i ++) {
       Argument argument = arguments.get(i);
       boolean required = argument.isRequired();
 
+      ArgumentProvider provider = argument.getProvider();
+      if (args.isEmpty()) {
+        if (onlyPresentArgs) {
+          break;
+        } else {
+          if (required) {
+            matches.add(null);
+          } else {
+            String defaultValue = argument.getDefaultValue();
+            if (!defaultValue.equals("")) {
+              try {
+                matches.add(provider.getMatch(defaultValue, sender));
+              } catch (Exception e) {
+                matches.add(includeOptionals ? java.util.Optional.empty() : null);
+              }
+            } else {
+              matches.add(includeOptionals ? java.util.Optional.empty() : null);
+            }
+          }
+        }
+        continue;
+      }
       String in = args.get(0);
       int min = argument.getMin(), max = argument.getMax();
       if (i + 1 == arguments.size() && (min != 1 || max != 1)) {
         int remaining = args.size();
         if (min <= remaining && remaining <= max) {
           StringBuilder inBuilder = new StringBuilder();
-          args.forEach(inBuilder::append);
-          in = inBuilder.toString();
+          args.forEach(arg -> inBuilder.append(arg).append(" "));
+          in = inBuilder.toString().trim();
         } else {
           matches.add(null);
           break;
         }
       }
 
-      Object match = argument.getProvider().getMatch(in, sender);
-      if (match == null) {
-        if (required) {
-          matches.add(null);
+      try {
+        Object match = provider.getMatch(in, sender);
+        if (match == null) {
+          if (required) {
+            matches.add(null);
+          } else {
+            String defaultValue = argument.getDefaultValue();
+            if (!defaultValue.equals("")) {
+              try {
+                matches.add(provider.getMatch(defaultValue, sender));
+              } catch (Exception e) {
+                matches.add(includeOptionals ? java.util.Optional.empty() : null);
+              }
+            } else {
+              matches.add(includeOptionals ? java.util.Optional.empty() : null);
+            }
+          }
         } else {
-          matches.add(java.util.Optional.empty());
+          matches.add(match);
+          args.remove(0);
         }
-      } else {
-        matches.add(match);
+      } catch (Exception e) {
+        matches.add(includeOptionals ? java.util.Optional.empty() : null);
       }
-
-      args.remove(0);
     }
 
     return matches;

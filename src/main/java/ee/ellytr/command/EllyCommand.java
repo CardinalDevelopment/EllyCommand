@@ -26,7 +26,7 @@ public class EllyCommand {
 
   private final List<String> aliases;
   private final String description;
-  private final String usage;
+  private final List<String> usages;
 
   private final List<CommandInstance> instances = Lists.newArrayList();
   private final List<EllyCommand> nestedCommands = Lists.newArrayList();
@@ -35,7 +35,7 @@ public class EllyCommand {
   protected EllyCommand(Command command) {
     aliases = Lists.newArrayList(command.aliases());
     description = command.description();
-    usage = command.usage();
+    usages = Lists.newArrayList();
   }
 
   public String getName() {
@@ -52,10 +52,24 @@ public class EllyCommand {
 
   public void addInstance(CommandInstance instance) {
     instances.add(instance);
+    usages.add(instance.getUsage());
   }
 
   public void addNestedCommand(EllyCommand command) {
     nestedCommands.add(command);
+    usages.add(command.getUsage());
+  }
+
+  public String getUsage() {
+    StringBuilder usage = new StringBuilder("/" + aliases.get(0));
+    for (int i = 0; i < usages.size(); i ++) {
+      if (i == 0) {
+        usage.append(" ").append(usages.get(i));
+      } else {
+        usage.append(", ").append(usages.get(i));
+      }
+    }
+    return usage.toString();
   }
 
 }

@@ -30,6 +30,8 @@ public class CommandInstance {
   private final int min;
   private final int max;
   private final String[] permissions;
+  private final String usage;
+  private final boolean console, player;
   private final List<Argument> arguments;
 
   private final Method method;

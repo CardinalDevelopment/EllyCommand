@@ -18,12 +18,14 @@ package ee.ellytr.command;
 
 import com.google.common.collect.Lists;
 import ee.ellytr.command.argument.Argument;
+import ee.ellytr.command.util.Collections;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class CommandTabCompleter implements TabCompleter {
@@ -35,27 +37,16 @@ public class CommandTabCompleter implements TabCompleter {
     List<String> suggestions = Lists.newArrayList();
 
     List<CommandInstance> validInstances = Lists.newArrayList();
-    for (CommandInstance instance : command.getInstances()) {
-      List<Object> matches = Argument.matchArguments(instance, args, sender);
-      boolean valid = true;
-      for (int i = 0; i < args.length; i ++) {
-        if (matches.get(i) == null) {
-          valid = false;
-        }
-      }
-      if (valid) {
-        validInstances.add(instance);
-      }
-    }
+    validInstances.addAll(command.getInstances().stream().filter(instance
+        -> !Argument.matchArguments(instance, args, sender, true, true).contains(null)).collect(Collectors.toList()));
+
+    String argument = args[0];
     for (EllyCommand nestedCommand : command.getNestedCommands()) {
-      String argument = args[0];
       if (args.length == 1 && nestedCommand.getName().toLowerCase().startsWith(argument.toLowerCase())) {
         suggestions.add(nestedCommand.getName());
       } else if (args.length > 1 && nestedCommand.getName().equals(argument)) {
-        List<String> arguments = Lists.newArrayList(args);
-        arguments.remove(0);
         suggestions.addAll(nestedCommand.getTabCompleter().onTabComplete(sender, cmd, alias,
-            arguments.toArray(new String[arguments.size()])));
+            Collections.removeFirstArgument(args)));
       }
     }
 

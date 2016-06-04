@@ -16,6 +16,7 @@
  */
 package ee.ellytr.command;
 
+import com.google.common.collect.Maps;
 import ee.ellytr.command.argument.ArgumentProvider;
 import ee.ellytr.command.argument.provider.BooleanProvider;
 import ee.ellytr.command.argument.provider.ByteProvider;
@@ -37,7 +38,7 @@ import java.util.Map;
 
 public class ProviderRegistry {
 
-  private Map<Class, ArgumentProvider> providers;
+  private Map<Class, ArgumentProvider> providers = Maps.newHashMap();
 
   protected ProviderRegistry() {
     registerDefaultProviders();

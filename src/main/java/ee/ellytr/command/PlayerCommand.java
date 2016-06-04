@@ -14,15 +14,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
-package ee.ellytr.command.util;
+package ee.ellytr.command;
 
-import org.bukkit.Bukkit;
-import org.bukkit.command.CommandMap;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public class Commands {
-
-  public static CommandMap getCommandMap() {
-    return Reflections.getField(Bukkit.getPluginManager(), "commandMap");
-  }
-
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface PlayerCommand {
 }

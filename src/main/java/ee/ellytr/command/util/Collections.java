@@ -17,6 +17,7 @@
 package ee.ellytr.command.util;
 
 import com.google.common.collect.Lists;
+import ee.ellytr.command.EllyCommand;
 
 import java.util.List;
 
@@ -26,6 +27,23 @@ public class Collections {
     List<T> intersection = Lists.newArrayList(list1);
     intersection.retainAll(list2);
     return intersection;
+  }
+
+  public static EllyCommand getCommand(List<EllyCommand> commands, String name) {
+    for (EllyCommand command : commands) {
+      for (String alias : command.getAliases()) {
+        if (alias.equalsIgnoreCase(name)) {
+          return command;
+        }
+      }
+    }
+    return null;
+  }
+
+  public static String[] removeFirstArgument(String[] array) {
+    List<String> list = Lists.newArrayList(array);
+    list.remove(0);
+    return list.toArray(new String[list.size()]);
   }
 
 }
