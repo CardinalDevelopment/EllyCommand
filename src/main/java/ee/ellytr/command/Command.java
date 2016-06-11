@@ -14,8 +14,22 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
+package ee.ellytr.command;
 
-package ee.ellytr.command.exception;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public class CommandConsoleNoUseException extends CommandException {
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Command {
+
+  String[] aliases();
+  String description();
+  int min() default 0;
+  int max() default Integer.MAX_VALUE;
+  String usage() default "";
+  String[] permissions() default {};
+
 }

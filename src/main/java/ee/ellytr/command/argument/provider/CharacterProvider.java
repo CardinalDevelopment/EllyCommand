@@ -14,17 +14,24 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
-package ee.ellytr.command.command;
+package ee.ellytr.command.argument.provider;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import ee.ellytr.command.argument.ArgumentProvider;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface CommandPermissions {
+import java.util.List;
 
-    String[] value();
+public class CharacterProvider implements ArgumentProvider<Character> {
+
+  @Override
+  public Character getMatch(String in, CommandSender sender) {
+    return in.charAt(0);
+  }
+
+  @Override
+  public List<String> getSuggestions(String in, CommandSender sender) {
+    return null;
+  }
 
 }

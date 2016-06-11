@@ -14,8 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package ee.ellytr.command.exception;
 
-public class CommandPlayerNoUseException extends CommandException {
+public class CommandPlayerException extends CommandException {
 }

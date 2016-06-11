@@ -14,7 +14,24 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
-package ee.ellytr.command.exception;
+package ee.ellytr.command.argument.provider;
 
-public class CommandException extends Exception {
+import ee.ellytr.command.argument.ArgumentProvider;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+
+import java.util.List;
+
+public class StringProvider implements ArgumentProvider<String> {
+
+  @Override
+  public String getMatch(String in, CommandSender sender) {
+    return in;
+  }
+
+  @Override
+  public List<String> getSuggestions(String in, CommandSender sender) {
+    return null;
+  }
+
 }

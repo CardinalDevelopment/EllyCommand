@@ -14,15 +14,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
+package ee.ellytr.command.util;
 
-package ee.ellytr.command.argument.provider;
+public class Strings {
 
-import java.util.List;
-
-public interface ArgumentProvider<T> {
-
-  T getMatch(String in);
-
-  List<String> getSuggestions(String in);
+  public static String getTechnicalName(String in) {
+    return in.toUpperCase().replaceAll(" ", "_");
+  }
 
 }

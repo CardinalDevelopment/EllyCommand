@@ -14,28 +14,36 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package ee.ellytr.command.util;
 
-import java.lang.reflect.Field;
+import com.google.common.collect.Lists;
+import ee.ellytr.command.EllyCommand;
 
-public class ReflectionUtil {
+import java.util.List;
 
-  /*
-   * Author: zml2008
-   */
-  @SuppressWarnings("unchecked")
-  public static <T> T getField(Object from, String name) {
-    Class<?> checkClass = from.getClass();
-    do {
-      try {
-        Field field = checkClass.getDeclaredField(name);
-        field.setAccessible(true);
-        return (T) field.get(from);
-      } catch (NoSuchFieldException | IllegalAccessException ignored) {
+public class Collections {
+
+  public static <T> List<T> getIntersection(List<T> list1, List<T> list2) {
+    List<T> intersection = Lists.newArrayList(list1);
+    intersection.retainAll(list2);
+    return intersection;
+  }
+
+  public static EllyCommand getCommand(List<EllyCommand> commands, String name) {
+    for (EllyCommand command : commands) {
+      for (String alias : command.getAliases()) {
+        if (alias.equalsIgnoreCase(name)) {
+          return command;
+        }
       }
-    } while (checkClass.getSuperclass() != Object.class && ((checkClass = checkClass.getSuperclass()) != null));
+    }
     return null;
+  }
+
+  public static String[] removeFirstArgument(String[] array) {
+    List<String> list = Lists.newArrayList(array);
+    list.remove(0);
+    return list.toArray(new String[list.size()]);
   }
 
 }

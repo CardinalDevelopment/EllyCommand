@@ -14,8 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-package ee.ellytr.command.command;
+package ee.ellytr.command;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -24,14 +23,5 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface AlternateCommand {
-
-  String[] aliases() default {};
-
-  int max() default Integer.MAX_VALUE;
-
-  int min() default 0;
-
-  String[] permissions() default {};
-
+public @interface PlayerCommand {
 }

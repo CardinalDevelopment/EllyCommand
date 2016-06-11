@@ -14,7 +14,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
-package ee.ellytr.command.exception;
+package ee.ellytr.command;
 
-public class CommandException extends Exception {
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface NestedCommands {
+
+  Class[] value();
+
 }

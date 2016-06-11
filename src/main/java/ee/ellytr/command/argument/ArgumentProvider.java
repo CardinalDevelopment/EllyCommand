@@ -14,18 +14,16 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
+package ee.ellytr.command.argument;
 
-package ee.ellytr.command.command;
+import org.bukkit.command.CommandSender;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.List;
 
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface NestedCommands {
+public interface ArgumentProvider<T> {
 
-  Class<?>[] value();
+  T getMatch(String in, CommandSender sender);
+
+  List<String> getSuggestions(String in, CommandSender sender);
 
 }

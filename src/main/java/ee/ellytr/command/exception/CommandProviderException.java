@@ -14,23 +14,18 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
+package ee.ellytr.command.exception;
 
-package ee.ellytr.command.argument.provider.providers;
+import ee.ellytr.command.argument.ArgumentProvider;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-import ee.ellytr.command.argument.provider.ArgumentProvider;
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
+public class CommandProviderException extends CommandException {
 
-import java.util.List;
-
-public class DoubleProvider implements ArgumentProvider<Double> {
-
-  @Override
-  public Double getMatch(String in) {
-    return Double.parseDouble(in);
-  }
-
-  @Override
-  public List<String> getSuggestions(String in) {
-    return null;
-  }
+  private ArgumentProvider provider;
 
 }

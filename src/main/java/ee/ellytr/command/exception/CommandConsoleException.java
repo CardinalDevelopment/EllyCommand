@@ -14,23 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
+package ee.ellytr.command.exception;
 
-package ee.ellytr.command.argument.provider.providers;
-
-import ee.ellytr.command.argument.provider.ArgumentProvider;
-
-import java.util.List;
-
-public class ByteProvider implements ArgumentProvider<Byte> {
-
-  @Override
-  public Byte getMatch(String in) {
-    return Byte.parseByte(in);
-  }
-
-  @Override
-  public List<String> getSuggestions(String in) {
-    return null;
-  }
-
+public class CommandConsoleException extends CommandException {
 }

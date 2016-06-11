@@ -14,22 +14,23 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
+package ee.ellytr.command.argument.provider;
 
-package ee.ellytr.command.argument.provider.providers;
-
-import ee.ellytr.command.argument.provider.ArgumentProvider;
+import ee.ellytr.command.argument.ArgumentProvider;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.util.List;
 
-public class LongProvider implements ArgumentProvider<Long> {
+public class FloatProvider implements ArgumentProvider<Float> {
 
   @Override
-  public Long getMatch(String in) {
-    return Long.parseLong(in);
+  public Float getMatch(String in, CommandSender sender) {
+    return Float.parseFloat(in);
   }
 
   @Override
-  public List<String> getSuggestions(String in) {
+  public List<String> getSuggestions(String in, CommandSender sender) {
     return null;
   }
 

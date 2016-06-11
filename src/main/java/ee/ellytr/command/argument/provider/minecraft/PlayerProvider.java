@@ -14,39 +14,39 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
+package ee.ellytr.command.argument.provider.minecraft;
 
-package ee.ellytr.command.argument.provider.providers;
-
-import com.google.common.collect.Lists;
-import ee.ellytr.command.argument.provider.ArgumentProvider;
+import ee.ellytr.command.argument.ArgumentProvider;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class PlayerProvider implements ArgumentProvider<Player> {
 
   @Override
-  public Player getMatch(String in) {
-    if (in.startsWith("@")) {
-      return Bukkit.getPlayerExact(in.substring(1));
-    } else if (in.startsWith("#")) {
-      return Bukkit.getPlayer(UUID.fromString(in.substring(1)));
+  public Player getMatch(String in, CommandSender sender) {
+    boolean exact = in.startsWith("@");
+    boolean uuid = in.startsWith("#");
+    if (exact || uuid) {
+      in = in.substring(1);
+    }
+    if (exact) {
+      return Bukkit.getPlayerExact(in);
+    }
+    if (uuid) {
+      return Bukkit.getPlayer(UUID.fromString(in));
     }
     return Bukkit.getPlayer(in);
   }
 
   @Override
-  public List<String> getSuggestions(String in) {
-    List<String> suggestions = Lists.newArrayList();
-    for (Player player : Bukkit.getOnlinePlayers()) {
-      String name = player.getName();
-      if (name.toLowerCase().startsWith(in.toLowerCase())) {
-        suggestions.add(name);
-      }
-    }
-    return suggestions;
+  public List<String> getSuggestions(String in, CommandSender sender) {
+    return Bukkit.getOnlinePlayers().stream().map(Player::getName)
+        .filter(str -> str.toLowerCase().startsWith(in.toLowerCase())).collect(Collectors.toList());
   }
 
 }

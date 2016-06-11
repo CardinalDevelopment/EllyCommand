@@ -14,27 +14,24 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
+package ee.ellytr.command.argument.provider;
 
-package ee.ellytr.command.argument.provider.providers;
-
-import com.google.common.collect.Lists;
-import ee.ellytr.command.argument.provider.ArgumentProvider;
+import ee.ellytr.command.argument.ArgumentProvider;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-public class BooleanProvider implements ArgumentProvider<Boolean> {
+public class ByteProvider implements ArgumentProvider<Byte> {
 
   @Override
-  public Boolean getMatch(String in) {
-    return in.equalsIgnoreCase("on") || in.equalsIgnoreCase("true");
+  public Byte getMatch(String in, CommandSender sender) {
+    return Byte.parseByte(in);
   }
 
   @Override
-  public List<String> getSuggestions(String in) {
-    List<String> values = Lists.newArrayList("on", "off", "true", "false");
-    return values.stream().filter(value -> value.toLowerCase().startsWith(in.toLowerCase())).collect(Collectors.toList());
+  public List<String> getSuggestions(String in, CommandSender sender) {
+    return null;
   }
 
 }
-

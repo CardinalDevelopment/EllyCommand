@@ -14,22 +14,26 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
+package ee.ellytr.command.util;
 
-package ee.ellytr.command.argument.provider.providers;
+import java.lang.reflect.Field;
 
-import ee.ellytr.command.argument.provider.ArgumentProvider;
+public class Reflections {
 
-import java.util.List;
-
-public class FloatProvider implements ArgumentProvider<Float> {
-
-  @Override
-  public Float getMatch(String in) {
-    return Float.parseFloat(in);
-  }
-
-  @Override
-  public List<String> getSuggestions(String in) {
+  /*
+   * Author: zml2008
+   */
+  @SuppressWarnings("unchecked")
+  public static <T> T getField(Object from, String name) {
+    Class<?> clazz = from.getClass();
+    do {
+      try {
+        Field field = clazz.getDeclaredField(name);
+        field.setAccessible(true);
+        return (T) field.get(from);
+      } catch (NoSuchFieldException | IllegalAccessException ignored) {
+      }
+    } while (clazz.getSuperclass() != Object.class && ((clazz = clazz.getSuperclass()) != null));
     return null;
   }
 

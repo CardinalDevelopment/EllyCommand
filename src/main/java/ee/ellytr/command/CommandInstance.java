@@ -14,18 +14,26 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package ee.ellytr.command;
 
-import lombok.Data;
+import ee.ellytr.command.argument.Argument;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-@Data
-public class CommandInfo {
+import java.lang.reflect.Method;
+import java.util.List;
 
-  private final String[] aliases;
-  private final String description;
-  private final String[] permissions;
+@Getter
+@RequiredArgsConstructor
+public class CommandInstance {
+
   private final int min;
   private final int max;
+  private final String[] permissions;
+  private final String usage;
+  private final boolean console, player;
+  private final List<Argument> arguments;
+
+  private final Method method;
 
 }

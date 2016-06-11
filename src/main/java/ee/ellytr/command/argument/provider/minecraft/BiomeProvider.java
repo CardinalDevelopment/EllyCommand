@@ -14,23 +14,29 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
+package ee.ellytr.command.argument.provider.minecraft;
 
-package ee.ellytr.command.argument.provider.providers;
-
-import ee.ellytr.command.argument.provider.ArgumentProvider;
+import com.google.common.collect.Lists;
+import ee.ellytr.command.argument.ArgumentProvider;
+import ee.ellytr.command.util.Strings;
+import org.bukkit.block.Biome;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class ShortProvider implements ArgumentProvider<Short> {
+public class BiomeProvider implements ArgumentProvider<Biome> {
 
   @Override
-  public Short getMatch(String in) {
-    return Short.parseShort(in);
+  public Biome getMatch(String in, CommandSender sender) {
+    return Biome.valueOf(Strings.getTechnicalName(in));
   }
 
   @Override
-  public List<String> getSuggestions(String in) {
-    return null;
+  public List<String> getSuggestions(String in, CommandSender sender) {
+    return Lists.newArrayList(Biome.values()).stream().map(Enum::name)
+        .filter(str -> str.toLowerCase().startsWith(in.toLowerCase())).collect(Collectors.toList());
   }
 
 }

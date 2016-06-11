@@ -14,35 +14,28 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
-package ee.ellytr.command;
+package ee.ellytr.command.argument.provider.minecraft;
 
-import com.google.common.collect.Lists;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import org.bukkit.plugin.Plugin;
+import ee.ellytr.command.argument.ArgumentProvider;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-@Getter
-@RequiredArgsConstructor
-public class CommandRegistry {
+public class WorldProvider implements ArgumentProvider<World> {
 
-  private final Plugin plugin;
-
-  private final List<Class> classes = Lists.newArrayList();
-  private final CommandFactory factory = new CommandFactory(this);
-  private final ProviderRegistry providerRegistry = new ProviderRegistry();
-
-  public void addClass(Class clazz) {
-    classes.add(clazz);
+  @Override
+  public World getMatch(String in, CommandSender sender) {
+    return Bukkit.getWorld(in);
   }
 
-  public void removeClass(Class clazz) {
-    classes.remove(clazz);
-  }
-
-  public void register() {
-    factory.build();
+  @Override
+  public List<String> getSuggestions(String in, CommandSender sender) {
+    return Bukkit.getWorlds().stream().map(World::getName)
+        .filter(str -> str.toLowerCase().startsWith(in.toLowerCase())).collect(Collectors.toList());
   }
 
 }

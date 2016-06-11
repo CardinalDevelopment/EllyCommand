@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package ee.ellytr.command.argument;
 
 import java.lang.annotation.ElementType;
@@ -25,4 +24,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Optional {
+
+  String defaultValue() default "";
+
 }
