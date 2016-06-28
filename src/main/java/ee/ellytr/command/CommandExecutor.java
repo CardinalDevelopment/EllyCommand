@@ -110,7 +110,15 @@ public class CommandExecutor {
         parameters.add(0, cmd);
         try {
           validInstances.get(0).getMethod().invoke(null, parameters);
-        } catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (InvocationTargetException e) {
+          Throwable cause = e.getCause();
+          if (cause instanceof CommandException) {
+            throw (CommandException) cause;
+          } else {
+            Logger.getLogger("EllyCommand").warning("Could not execute command \"" + command.getName() + "\"");
+            e.printStackTrace();
+          }
+        } catch (IllegalAccessException e) {
           Logger.getLogger("EllyCommand").warning("Could not execute command \"" + command.getName() + "\"");
           e.printStackTrace();
         }
@@ -122,7 +130,15 @@ public class CommandExecutor {
 
       try {
         validInstances.get(0).getMethod().invoke(null, parameters.toArray(new Object[parameters.size()]));
-      } catch (IllegalAccessException | InvocationTargetException e) {
+      } catch (InvocationTargetException e) {
+        Throwable cause = e.getCause();
+        if (cause instanceof CommandException) {
+          throw (CommandException) cause;
+        } else {
+          Logger.getLogger("EllyCommand").warning("Could not execute command \"" + command.getName() + "\"");
+          e.printStackTrace();
+        }
+      } catch (IllegalAccessException e) {
         Logger.getLogger("EllyCommand").warning("Could not execute command \"" + command.getName() + "\"");
         e.printStackTrace();
       }
