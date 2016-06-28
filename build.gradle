@@ -8,7 +8,7 @@ buildscript {
 }
 
 group 'ee.ellytr.command'
-version '2.0.1-SNAPSHOT'
+version '2.0.1'
 
 apply plugin: 'java'
 apply plugin: 'maven'
