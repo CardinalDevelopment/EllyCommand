@@ -22,8 +22,8 @@ repositories {
 }
 
 dependencies {
-    compile 'org.projectlombok:lombok:1.16.6'
-    compile 'org.bukkit:bukkit:1.9.4-R0.1-SNAPSHOT'
+    compile 'org.projectlombok:lombok:1.16.8'
+    compile 'org.bukkit:bukkit:1.8.8-R0.1-SNAPSHOT'
 }
 
 apply plugin: 'license'
