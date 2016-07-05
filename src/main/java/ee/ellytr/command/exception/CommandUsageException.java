@@ -16,5 +16,9 @@
  */
 package ee.ellytr.command.exception;
 
+/**
+ * This is used when a command sender attempts to execute a command, but there are no valid usages that match the sent
+ * command.
+ */
 public class CommandUsageException extends CommandException {
 }

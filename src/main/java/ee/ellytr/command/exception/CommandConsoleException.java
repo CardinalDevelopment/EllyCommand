@@ -16,5 +16,9 @@
  */
 package ee.ellytr.command.exception;
 
+/**
+ * This is used when the command sender is the console, however the console does not have access to execute the command
+ * due to a {@link ee.ellytr.command.PlayerCommand} annotation.
+ */
 public class CommandConsoleException extends CommandException {
 }

@@ -21,9 +21,13 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * This is when a command sender attempts to execute a command that is not a valid usage; however, unlike the
+ * {@link CommandUsageException}, this is used when only one argument provider cannot get a match based on the given
+ * argument.
+ */
 @Getter
 @AllArgsConstructor
-@NoArgsConstructor
 public class CommandProviderException extends CommandException {
 
   private ArgumentProvider provider;

@@ -16,5 +16,8 @@
  */
 package ee.ellytr.command.exception;
 
+/**
+ * This is used when the command sender does not have all of the sufficient permissions to execute a command.
+ */
 public class CommandPermissionException extends CommandException {
 }
