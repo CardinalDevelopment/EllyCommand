@@ -44,7 +44,7 @@ public class CommandTabCompleter implements TabCompleter {
     for (EllyCommand nestedCommand : command.getNestedCommands()) {
       if (args.length == 1 && nestedCommand.getName().toLowerCase().startsWith(argument.toLowerCase())) {
         suggestions.add(nestedCommand.getName());
-      } else if (args.length > 1 && nestedCommand.getName().equals(argument)) {
+      } else if (args.length > 1 && nestedCommand.getName().equalsIgnoreCase(argument)) {
         suggestions.addAll(nestedCommand.getTabCompleter().onTabComplete(sender, cmd, alias,
             Collections.removeFirstArgument(args)));
       }
