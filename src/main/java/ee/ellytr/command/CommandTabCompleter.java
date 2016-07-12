@@ -50,6 +50,10 @@ public class CommandTabCompleter implements TabCompleter {
       }
     }
 
+    for (CommandInstance instance : validInstances) {
+
+    }
+
     return suggestions;
   }
 

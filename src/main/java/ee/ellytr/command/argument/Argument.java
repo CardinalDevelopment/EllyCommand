@@ -17,13 +17,14 @@
 package ee.ellytr.command.argument;
 
 import com.google.common.collect.Lists;
+import ee.ellytr.command.CommandContext;
 import ee.ellytr.command.CommandInstance;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.bukkit.command.CommandSender;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -59,80 +60,20 @@ public class Argument<T> {
     return null;
   }
 
-  public static List<Object> matchArguments(CommandInstance instance, String[] argsArray,
-                                            CommandSender sender, boolean includeOptionals, boolean onlyPresentArgs) {
-    List<Object> matches = Lists.newArrayList();
+  public static List<ArgumentContext> matchArguments(CommandInstance instance, CommandContext context) {
+    List<ArgumentContext> matches = new ArrayList<>();
 
-    List<String> args = Lists.newArrayList(argsArray);
+    List<String> input = Lists.newArrayList(context.getArguments());
     List<Argument> arguments = instance.getArguments();
 
-    for (int i = 0; i < arguments.size(); i ++) {
+    for (int i = 0; i < arguments.size(); i++) {
       Argument argument = arguments.get(i);
-      boolean required = argument.isRequired();
-
       ArgumentProvider provider = argument.getProvider();
-      if (args.isEmpty()) {
-        if (onlyPresentArgs) {
-          break;
-        } else {
-          if (required) {
-            matches.add(null);
-          } else {
-            String defaultValue = argument.getDefaultValue();
-            if (!defaultValue.equals("")) {
-              try {
-                matches.add(provider.getMatch(defaultValue, sender));
-              } catch (Exception e) {
-                matches.add(includeOptionals ? java.util.Optional.empty() : null);
-              }
-            } else {
-              matches.add(includeOptionals ? java.util.Optional.empty() : null);
-            }
-          }
-        }
-        continue;
-      }
-      String in = args.get(0);
-      int min = argument.getMin(), max = argument.getMax();
-      if (i + 1 == arguments.size() && (min != 1 || max != 1)) {
-        int remaining = args.size();
-        if (min <= remaining && remaining <= max) {
-          StringBuilder inBuilder = new StringBuilder();
-          args.forEach(arg -> inBuilder.append(arg).append(" "));
-          in = inBuilder.toString().trim();
-        } else {
-          matches.add(null);
-          break;
-        }
-      }
 
-      try {
-        Object match = provider.getMatch(in, sender);
-        if (match == null) {
-          if (required) {
-            matches.add(null);
-          } else {
-            String defaultValue = argument.getDefaultValue();
-            if (!defaultValue.equals("")) {
-              try {
-                matches.add(provider.getMatch(defaultValue, sender));
-              } catch (Exception e) {
-                matches.add(includeOptionals ? java.util.Optional.empty() : null);
-              }
-            } else {
-              matches.add(includeOptionals ? java.util.Optional.empty() : null);
-            }
-          }
-        } else {
-          matches.add(match);
-          args.remove(0);
-        }
-      } catch (Exception e) {
-        matches.add(includeOptionals ? java.util.Optional.empty() : null);
+      if (input.isEmpty()) {
+
       }
     }
-
-    return matches;
   }
 
 }

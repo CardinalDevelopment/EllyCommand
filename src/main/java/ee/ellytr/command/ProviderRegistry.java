@@ -29,11 +29,14 @@ import ee.ellytr.command.argument.provider.ShortProvider;
 import ee.ellytr.command.argument.provider.StringProvider;
 import ee.ellytr.command.argument.provider.minecraft.BiomeProvider;
 import ee.ellytr.command.argument.provider.minecraft.PlayerProvider;
+import ee.ellytr.command.argument.provider.minecraft.PlayersProvider;
 import ee.ellytr.command.argument.provider.minecraft.WorldProvider;
+import ee.ellytr.command.util.Players;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.entity.Player;
 
+import java.util.List;
 import java.util.Map;
 
 public class ProviderRegistry {
@@ -68,6 +71,7 @@ public class ProviderRegistry {
 
     registerProvider(Biome.class, new BiomeProvider());
     registerProvider(Player.class, new PlayerProvider());
+    registerProvider(Players.class, new PlayersProvider());
     registerProvider(World.class, new WorldProvider());
   }
 

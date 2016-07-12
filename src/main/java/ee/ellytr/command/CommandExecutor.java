@@ -18,6 +18,7 @@ package ee.ellytr.command;
 
 import com.google.common.collect.Lists;
 import ee.ellytr.command.argument.Argument;
+import ee.ellytr.command.argument.ArgumentProvider;
 import ee.ellytr.command.exception.CommandConsoleException;
 import ee.ellytr.command.exception.CommandException;
 import ee.ellytr.command.exception.CommandPermissionException;
@@ -86,7 +87,8 @@ public class CommandExecutor {
       if (skip) {
         continue;
       }
-      if (!Argument.matchArguments(instance, args, sender, true, false).contains(null)) {
+
+      if () {
         validInstances.add(instance);
       }
     }
@@ -106,7 +108,7 @@ public class CommandExecutor {
     CommandContext cmd = new CommandContext(sender, args);
     if (executeAllValidInstances) {
       for (CommandInstance instance : validInstances) {
-        List<Object> parameters = Argument.matchArguments(instance, args, sender, false, false);
+
         parameters.add(0, cmd);
         try {
           validInstances.get(0).getMethod().invoke(null, parameters);
