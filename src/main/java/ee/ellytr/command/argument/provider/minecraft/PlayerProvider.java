@@ -46,7 +46,7 @@ public class PlayerProvider implements ArgumentProvider<Player> {
   @Override
   public List<String> getSuggestions(String in, CommandSender sender) {
     return Bukkit.getOnlinePlayers().stream().map(Player::getName)
-        .filter(str -> str.toLowerCase().startsWith(in.toLowerCase())).collect(Collectors.toList());
+        .filter(name -> name.toLowerCase().startsWith(in.toLowerCase())).collect(Collectors.toList());
   }
 
 }
