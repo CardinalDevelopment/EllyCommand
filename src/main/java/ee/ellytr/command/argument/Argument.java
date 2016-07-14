@@ -19,8 +19,11 @@ package ee.ellytr.command.argument;
 import com.google.common.collect.Lists;
 import ee.ellytr.command.CommandContext;
 import ee.ellytr.command.CommandInstance;
+import ee.ellytr.command.CommandMatch;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.bukkit.command.CommandSender;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -60,18 +63,55 @@ public class Argument<T> {
     return null;
   }
 
-  public static List<ArgumentContext> matchArguments(CommandInstance instance, CommandContext context) {
+  @SuppressWarnings("unchecked")
+  public static CommandMatch matchArguments(
+      @NonNull CommandInstance instance, @NonNull CommandContext context) {
     List<ArgumentContext> matches = new ArrayList<>();
 
     List<String> input = Lists.newArrayList(context.getArguments());
     List<Argument> arguments = instance.getArguments();
+
+    CommandSender sender = context.getSender();
 
     for (int i = 0; i < arguments.size(); i++) {
       Argument argument = arguments.get(i);
       ArgumentProvider provider = argument.getProvider();
 
       if (input.isEmpty()) {
+        handleInvalidArgument(matches, argument, sender, false);
+      } else {
+        try {
+          Object match = provider.getMatch(input.get(0), sender);
+          if (match == null) {
+            handleInvalidArgument(matches, argument, sender, true);
+          } else {
+            matches.add(new ArgumentContext(match, argument, true));
+            input.remove(0);
+          }
+        } catch (Exception e) {
+          handleInvalidArgument(matches, argument, sender, true);
+        }
+      }
+    }
 
+    return new CommandMatch(matches, input);
+  }
+
+  @SuppressWarnings("unchecked")
+  private static void handleInvalidArgument(
+      @NonNull List<ArgumentContext> matches, @NonNull Argument argument, @NonNull CommandSender sender, boolean present) {
+    if (argument.isRequired()) {
+      matches.add(new ArgumentContext(null, argument, false));
+    } else {
+      String defaultValue = argument.getDefaultValue();
+      if (!defaultValue.equals("")) {
+        try {
+          matches.add(new ArgumentContext(argument.getProvider().getMatch(defaultValue, sender), argument, false));
+        } catch (Exception e) {
+          matches.add(new ArgumentContext(null, argument, false));
+        }
+      } else {
+        matches.add(new ArgumentContext(null, argument, false));
       }
     }
   }
