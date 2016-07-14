@@ -18,6 +18,7 @@ package ee.ellytr.command;
 
 import ee.ellytr.command.argument.Argument;
 import ee.ellytr.command.argument.ArgumentContext;
+import ee.ellytr.command.exception.CommandArgumentException;
 import ee.ellytr.command.exception.CommandConsoleException;
 import ee.ellytr.command.exception.CommandException;
 import ee.ellytr.command.exception.CommandNestedException;
@@ -29,6 +30,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
@@ -64,7 +66,9 @@ public class CommandExecutor {
     CommandContext context = new CommandContext(sender, args);
 
     List<CommandInstance> instances = new ArrayList<>();
-    boolean outOfRange = false, noPermission = false, consoleNoUse = false, playerNoUse = false;
+    boolean outOfRange = false, noPermission = false,
+        consoleNoUse = false, playerNoUse = false, invalidArgument = false;
+    ArgumentContext invalid = null;
     for (CommandInstance instance : command.getInstances()) {
       int argsLength = args.length;
       if (argsLength < instance.getMin() && argsLength > instance.getMax()) {
@@ -93,23 +97,34 @@ public class CommandExecutor {
         continue;
       }
 
-      boolean valid = true;
       CommandMatch match = Argument.matchArguments(instance, context);
       if (match.hasOverflow()) {
-        valid = false;
-      } else {
+        ArgumentContext currentInvalid = null;
         for (ArgumentContext argument : match.getMatches()) {
           if (argument.getMatch() == null) {
-            valid = false;
+            if (currentInvalid == null) {
+              currentInvalid = argument;
+            } else {
+              currentInvalid = null;
+              break;
+            }
           }
         }
+        if (currentInvalid != null) {
+          invalidArgument = true;
+          invalid = currentInvalid;
+
+          continue;
+        }
+
+        continue;
       }
-      if (valid) {
-        instances.add(instance);
-      }
+      instances.add(instance);
     }
     if (instances.isEmpty()) {
-      if (playerNoUse) {
+      if (invalidArgument) {
+        throw new CommandArgumentException(invalid);
+      } else if (playerNoUse) {
         throw new CommandPlayerException();
       } else if (consoleNoUse) {
         throw new CommandConsoleException();

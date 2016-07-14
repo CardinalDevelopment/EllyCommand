@@ -16,6 +16,7 @@
  */
 package ee.ellytr.command.exception;
 
+import ee.ellytr.command.argument.ArgumentContext;
 import ee.ellytr.command.argument.ArgumentProvider;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,8 +29,8 @@ import lombok.NoArgsConstructor;
  */
 @Getter
 @AllArgsConstructor
-public class CommandProviderException extends CommandException {
+public class CommandArgumentException extends CommandUsageException {
 
-  private ArgumentProvider provider;
+  private ArgumentContext context;
 
 }
