@@ -45,18 +45,27 @@ public class CommandTabCompleter implements TabCompleter {
 
     List<CommandInstance> instances = new ArrayList<>();
     for (CommandInstance instance : command.getInstances()) {
-      boolean valid = true;
+      boolean skip = false;
+      for (String permission : instance.getPermissions()) {
+        if (!sender.hasPermission(permission)) {
+          skip = true;
+        }
+      }
+      if (skip) {
+        continue;
+      }
+
       boolean allArgumentsPresent = true;
       CommandMatch match = Argument.matchArguments(
           instance, new CommandContext(sender, Collections.removeLastArgument(args))
       );
       if (match.hasOverflow()) {
-        valid = false;
+        continue;
       } else {
         for (ArgumentContext argumentContext : match.getMatches()) {
           boolean present = argumentContext.isPresent();
           if (argumentContext.getMatch() == null && present) {
-            valid = false;
+            continue;
           }
           if (!present) {
             allArgumentsPresent = false;
@@ -64,16 +73,30 @@ public class CommandTabCompleter implements TabCompleter {
         }
       }
       if (allArgumentsPresent) {
-        valid = false;
+        continue;
       }
-      if (valid) {
-        instances.add(instance);
-      }
+      instances.add(instance);
     }
 
     String argument = args[0];
     for (EllyCommand nestedCommand : command.getNestedCommands()) {
       if (argsLength == 1 && nestedCommand.getName().toLowerCase().startsWith(argument.toLowerCase())) {
+        boolean skip = true;
+        for (CommandInstance instance : nestedCommand.getInstances()) {
+          boolean allPermissions = true;
+          for (String permission : instance.getPermissions()) {
+            if (!sender.hasPermission(permission)) {
+              allPermissions = false;
+            }
+          }
+          if (allPermissions) {
+            skip = false;
+          }
+        }
+        if (skip) {
+          continue;
+        }
+
         suggestions.add(nestedCommand.getName());
       } else if (argsLength > 1 && nestedCommand.getName().equalsIgnoreCase(argument)) {
         suggestions.addAll(nestedCommand.getTabCompleter().onTabComplete(sender, cmd, alias,
