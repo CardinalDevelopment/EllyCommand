@@ -14,20 +14,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with EllyCommand.  If not, see <http://www.gnu.org/licenses/>.
  */
-package ee.ellytr.command.argument;
+package ee.ellytr.command.exception;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
 @Getter
 @RequiredArgsConstructor
-public class ArgumentContext<T> {
+public class CommandNestedException extends CommandException {
 
-  private final T match;
-
-  private final Argument<T> argument;
-  private final boolean present;
+  private final Throwable cause;
 
 }

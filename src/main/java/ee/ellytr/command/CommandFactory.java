@@ -23,6 +23,7 @@ import ee.ellytr.command.util.Collections;
 import ee.ellytr.command.util.Commands;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.Plugin;
 
@@ -30,6 +31,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -39,14 +41,15 @@ import java.util.stream.Collectors;
 public class CommandFactory {
 
   private final CommandRegistry registry;
-  private final List<EllyCommand> commands = Lists.newArrayList();
+  private final List<EllyCommand> commands = new ArrayList<>();
+  private final List<EllyCommand> nestedCommands = new ArrayList<>();
   private final CommandExecutor executor = new CommandExecutor(this);
 
   protected void build() {
     for (Class clazz : registry.getClasses()) {
       // Builds all commands from the registry class's command methods
       commands.addAll(findCommandMethods(clazz).stream().map(method
-          -> analyzeCommand(method.getDeclaredAnnotation(Command.class), method)).collect(Collectors.toList()));
+          -> analyzeCommand(method.getDeclaredAnnotation(Command.class), method, false)).collect(Collectors.toList()));
     }
     for (EllyCommand command : commands) {
       for (CommandInstance instance : command.getInstances()) {
@@ -55,7 +58,10 @@ public class CommandFactory {
           for (Class clazz : nestedCommands.value()) {
             // Builds all commands from the nested class's command methods
             for (Method method : findCommandMethods(clazz)) {
-              command.addNestedCommand(analyzeCommand(method.getDeclaredAnnotation(Command.class), method));
+              EllyCommand nestedCommand = analyzeCommand(method.getDeclaredAnnotation(Command.class), method, true);
+
+              command.addNestedCommand(nestedCommand);
+              this.nestedCommands.add(nestedCommand);
             }
           }
         }
@@ -87,13 +93,14 @@ public class CommandFactory {
     }
   }
 
-  private EllyCommand analyzeCommand(Command command, Method method) {
+  private EllyCommand analyzeCommand(Command command, Method method, boolean nested) {
     List<String> aliases = Lists.newArrayList(command.aliases());
     CommandInstance instance = new CommandInstance(command.min(), command.max(), command.permissions(), command.usage(),
         method.getDeclaredAnnotation(ConsoleCommand.class) != null,
         method.getDeclaredAnnotation(PlayerCommand.class) != null,
         getArguments(method), method);
-    for (EllyCommand ellyCommand : commands) {
+
+    for (EllyCommand ellyCommand : nested ? nestedCommands : commands) {
       if (Collections.getIntersection(aliases, ellyCommand.getAliases()).size() >= 1) {
         // Add any additional aliases to the command
         aliases.stream().filter(alias -> !ellyCommand.hasAlias(alias)).forEach(ellyCommand::addAlias);

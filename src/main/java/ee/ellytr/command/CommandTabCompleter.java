@@ -18,12 +18,16 @@ package ee.ellytr.command;
 
 import com.google.common.collect.Lists;
 import ee.ellytr.command.argument.Argument;
+import ee.ellytr.command.argument.ArgumentContext;
 import ee.ellytr.command.util.Collections;
 import lombok.RequiredArgsConstructor;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,26 +36,55 @@ public class CommandTabCompleter implements TabCompleter {
 
   private final EllyCommand command;
 
+  @SuppressWarnings("unchecked")
   @Override
   public List<String> onTabComplete(CommandSender sender, Command cmd, String alias, String[] args) {
-    List<String> suggestions = Lists.newArrayList();
+    List<String> suggestions = new ArrayList<>();
 
-    List<CommandInstance> validInstances = Lists.newArrayList();
-    validInstances.addAll(command.getInstances().stream().filter(instance
-        -> !Argument.matchArguments(instance, args, sender, true, true).contains(null)).collect(Collectors.toList()));
+    int argsLength = args.length;
+
+    List<CommandInstance> instances = new ArrayList<>();
+    for (CommandInstance instance : command.getInstances()) {
+      boolean valid = true;
+      boolean allArgumentsPresent = true;
+      CommandMatch match = Argument.matchArguments(
+          instance, new CommandContext(sender, Collections.removeLastArgument(args))
+      );
+      if (match.hasOverflow()) {
+        valid = false;
+      } else {
+        for (ArgumentContext argumentContext : match.getMatches()) {
+          boolean present = argumentContext.isPresent();
+          if (argumentContext.getMatch() == null && present) {
+            valid = false;
+          }
+          if (!present) {
+            allArgumentsPresent = false;
+          }
+        }
+      }
+      if (allArgumentsPresent) {
+        valid = false;
+      }
+      if (valid) {
+        instances.add(instance);
+      }
+    }
 
     String argument = args[0];
     for (EllyCommand nestedCommand : command.getNestedCommands()) {
-      if (args.length == 1 && nestedCommand.getName().toLowerCase().startsWith(argument.toLowerCase())) {
+      if (argsLength == 1 && nestedCommand.getName().toLowerCase().startsWith(argument.toLowerCase())) {
         suggestions.add(nestedCommand.getName());
-      } else if (args.length > 1 && nestedCommand.getName().equalsIgnoreCase(argument)) {
+      } else if (argsLength > 1 && nestedCommand.getName().equalsIgnoreCase(argument)) {
         suggestions.addAll(nestedCommand.getTabCompleter().onTabComplete(sender, cmd, alias,
             Collections.removeFirstArgument(args)));
       }
     }
 
-    for (CommandInstance instance : validInstances) {
-
+    for (CommandInstance instance : instances) {
+      suggestions.addAll(
+          instance.getArguments().get(argsLength - 1).getProvider().getSuggestions(args[argsLength - 1], sender)
+      );
     }
 
     return suggestions;

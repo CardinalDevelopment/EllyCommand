@@ -16,16 +16,17 @@
  */
 package ee.ellytr.command;
 
-import com.google.common.collect.Lists;
 import ee.ellytr.command.argument.Argument;
-import ee.ellytr.command.argument.ArgumentProvider;
+import ee.ellytr.command.argument.ArgumentContext;
 import ee.ellytr.command.exception.CommandConsoleException;
 import ee.ellytr.command.exception.CommandException;
+import ee.ellytr.command.exception.CommandNestedException;
 import ee.ellytr.command.exception.CommandPermissionException;
 import ee.ellytr.command.exception.CommandPlayerException;
 import ee.ellytr.command.exception.CommandUsageException;
 import ee.ellytr.command.util.Collections;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.bukkit.command.CommandSender;
@@ -33,8 +34,10 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -58,7 +61,9 @@ public class CommandExecutor {
       }
     }
 
-    List<CommandInstance> validInstances = Lists.newArrayList();
+    CommandContext context = new CommandContext(sender, args);
+
+    List<CommandInstance> instances = new ArrayList<>();
     boolean outOfRange = false, noPermission = false, consoleNoUse = false, playerNoUse = false;
     for (CommandInstance instance : command.getInstances()) {
       int argsLength = args.length;
@@ -88,11 +93,22 @@ public class CommandExecutor {
         continue;
       }
 
-      if () {
-        validInstances.add(instance);
+      boolean valid = true;
+      CommandMatch match = Argument.matchArguments(instance, context);
+      if (match.hasOverflow()) {
+        valid = false;
+      } else {
+        for (ArgumentContext argument : match.getMatches()) {
+          if (argument.getMatch() == null) {
+            valid = false;
+          }
+        }
+      }
+      if (valid) {
+        instances.add(instance);
       }
     }
-    if (validInstances.isEmpty()) {
+    if (instances.isEmpty()) {
       if (playerNoUse) {
         throw new CommandPlayerException();
       } else if (consoleNoUse) {
@@ -107,11 +123,11 @@ public class CommandExecutor {
     }
     CommandContext cmd = new CommandContext(sender, args);
     if (executeAllValidInstances) {
-      for (CommandInstance instance : validInstances) {
-
+      for (CommandInstance instance : instances) {
+        List<Object> parameters = toParameters(Argument.matchArguments(instance, context).getMatches());
         parameters.add(0, cmd);
         try {
-          validInstances.get(0).getMethod().invoke(null, parameters);
+          instances.get(0).getMethod().invoke(null, parameters);
         } catch (InvocationTargetException e) {
           Throwable cause = e.getCause();
           if (cause instanceof CommandException) {
@@ -126,25 +142,29 @@ public class CommandExecutor {
         }
       }
     } else {
-      CommandInstance instance = validInstances.get(0);
-      List<Object> parameters = Argument.matchArguments(instance, args, sender, false, false);
+      CommandInstance instance = instances.get(0);
+
+      List<Object> parameters = toParameters(Argument.matchArguments(instance, context).getMatches());
       parameters.add(0, cmd);
 
       try {
-        validInstances.get(0).getMethod().invoke(null, parameters.toArray(new Object[parameters.size()]));
+        instances.get(0).getMethod().invoke(null, parameters.toArray(new Object[parameters.size()]));
       } catch (InvocationTargetException e) {
         Throwable cause = e.getCause();
         if (cause instanceof CommandException) {
           throw (CommandException) cause;
         } else {
-          Logger.getLogger("EllyCommand").warning("Could not execute command \"" + command.getName() + "\"");
-          e.printStackTrace();
+          throw new CommandNestedException(cause);
         }
       } catch (IllegalAccessException e) {
         Logger.getLogger("EllyCommand").warning("Could not execute command \"" + command.getName() + "\"");
         e.printStackTrace();
       }
     }
+  }
+
+  private List<Object> toParameters(@NonNull List<ArgumentContext> match) {
+    return match.stream().map(ArgumentContext::getMatch).collect(Collectors.toList());
   }
 
 }

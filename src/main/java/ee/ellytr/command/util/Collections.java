@@ -18,6 +18,7 @@ package ee.ellytr.command.util;
 
 import com.google.common.collect.Lists;
 import ee.ellytr.command.EllyCommand;
+import lombok.NonNull;
 
 import java.util.List;
 
@@ -40,10 +41,33 @@ public class Collections {
     return null;
   }
 
-  public static String[] removeFirstArgument(String[] array) {
-    List<String> list = Lists.newArrayList(array);
-    list.remove(0);
-    return list.toArray(new String[list.size()]);
+  public static String[] removeFirstArgument(@NonNull String[] array) {
+    int length = array.length;
+
+    if (length == 0) {
+      return new String[0];
+    }
+
+    String[] to = new String[length - 1];
+    for (int i = 1; i < length; i++) {
+      to[i - 1] = array[i];
+    }
+    return to;
+  }
+
+  public static String[] removeLastArgument(@NonNull String[] array) {
+    int length = array.length;
+
+    if (length == 0) {
+      return new String[0];
+    }
+
+    length--;
+    String[] to = new String[length];
+    for (int i = 0; i < length; i++) {
+      to[i] = array[i];
+    }
+    return to;
   }
 
 }
