@@ -28,15 +28,18 @@ import ee.ellytr.command.argument.provider.LongProvider;
 import ee.ellytr.command.argument.provider.ShortProvider;
 import ee.ellytr.command.argument.provider.StringProvider;
 import ee.ellytr.command.argument.provider.minecraft.BiomeProvider;
+import ee.ellytr.command.argument.provider.minecraft.OfflinePlayerProvider;
+import ee.ellytr.command.argument.provider.minecraft.OfflinePlayersProvider;
 import ee.ellytr.command.argument.provider.minecraft.PlayerProvider;
 import ee.ellytr.command.argument.provider.minecraft.PlayersProvider;
 import ee.ellytr.command.argument.provider.minecraft.WorldProvider;
+import ee.ellytr.command.util.OfflinePlayers;
 import ee.ellytr.command.util.Players;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.entity.Player;
 
-import java.util.List;
 import java.util.Map;
 
 public class ProviderRegistry {
@@ -70,6 +73,8 @@ public class ProviderRegistry {
     registerProvider(String.class, new StringProvider());
 
     registerProvider(Biome.class, new BiomeProvider());
+    registerProvider(OfflinePlayer.class, new OfflinePlayerProvider());
+    registerProvider(OfflinePlayers.class, new OfflinePlayersProvider());
     registerProvider(Player.class, new PlayerProvider());
     registerProvider(Players.class, new PlayersProvider());
     registerProvider(World.class, new WorldProvider());

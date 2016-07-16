@@ -26,6 +26,6 @@ import java.lang.annotation.Target;
 public @interface MultiArgs {
 
   int min() default 1;
-  int max() default 1;
+  int max() default Integer.MAX_VALUE;
 
 }
