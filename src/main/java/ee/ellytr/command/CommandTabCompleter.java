@@ -16,20 +16,16 @@
  */
 package ee.ellytr.command;
 
-import com.google.common.collect.Lists;
 import ee.ellytr.command.argument.Argument;
 import ee.ellytr.command.argument.ArgumentContext;
 import ee.ellytr.command.util.Collections;
 import lombok.RequiredArgsConstructor;
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class CommandTabCompleter implements TabCompleter {

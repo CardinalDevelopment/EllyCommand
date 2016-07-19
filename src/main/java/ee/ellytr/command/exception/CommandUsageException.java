@@ -16,9 +16,26 @@
  */
 package ee.ellytr.command.exception;
 
+import ee.ellytr.command.argument.ArgumentContext;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * This is used when a command sender attempts to execute a command, but there are no valid usages that match the sent
  * command.
  */
+@Getter
+@RequiredArgsConstructor
 public class CommandUsageException extends CommandException {
+
+  private final Error error;
+  private final ArgumentContext invalidArgument;
+
+  public enum Error {
+    TOO_FEW_ARGUMENTS,
+    TOO_MANY_ARGUMENTS,
+    INVALID_ARGUMENTS,
+    INVALID_USAGE
+  }
+
 }

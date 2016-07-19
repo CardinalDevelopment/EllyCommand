@@ -23,7 +23,6 @@ import ee.ellytr.command.util.Collections;
 import ee.ellytr.command.util.Commands;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.Plugin;
 
@@ -83,7 +82,7 @@ public class CommandFactory {
         pluginCommand.setDescription(command.getDescription());
         pluginCommand.setExecutor(plugin);
         pluginCommand.setTabCompleter(command.getTabCompleter());
-        pluginCommand.setUsage(command.getUsage());
+        pluginCommand.setUsage(command.getUsage(false));
 
         Commands.getCommandMap().register(plugin.getName(), pluginCommand);
       } catch (InstantiationException | InvocationTargetException | IllegalAccessException

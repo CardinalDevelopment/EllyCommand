@@ -18,7 +18,6 @@ package ee.ellytr.command.argument.provider;
 
 import ee.ellytr.command.argument.ArgumentProvider;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 import java.util.List;
 

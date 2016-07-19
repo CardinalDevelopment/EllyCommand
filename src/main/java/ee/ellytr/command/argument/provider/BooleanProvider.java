@@ -19,7 +19,6 @@ package ee.ellytr.command.argument.provider;
 import com.google.common.collect.Lists;
 import ee.ellytr.command.argument.ArgumentProvider;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 import java.util.List;
 import java.util.stream.Collectors;

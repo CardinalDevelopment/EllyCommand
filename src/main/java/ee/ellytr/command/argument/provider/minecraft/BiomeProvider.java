@@ -21,7 +21,6 @@ import ee.ellytr.command.argument.ArgumentProvider;
 import ee.ellytr.command.util.Strings;
 import org.bukkit.block.Biome;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 import java.util.List;
 import java.util.stream.Collectors;

@@ -18,7 +18,6 @@ package ee.ellytr.command;
 
 import com.google.common.collect.Lists;
 import lombok.Getter;
-import org.bukkit.Bukkit;
 
 import java.util.List;
 
@@ -53,16 +52,19 @@ public class EllyCommand {
 
   public void addInstance(CommandInstance instance) {
     instances.add(instance);
-    usages.add(instance.getUsage());
+    String usage = instance.getUsage();
+    if (!usage.equals("")) {
+      usages.add(usage);
+    }
   }
 
   public void addNestedCommand(EllyCommand command) {
     nestedCommands.add(command);
-    usages.add(command.getUsage());
+    usages.add(command.getUsage(true));
   }
 
-  public String getUsage() {
-    StringBuilder usage = new StringBuilder("/" + aliases.get(0));
+  public String getUsage(boolean nested) {
+    StringBuilder usage = new StringBuilder(nested ? "<" + aliases.get(0) + ">" : "/" + aliases.get(0));
     for (int i = 0; i < usages.size(); i ++) {
       if (i == 0) {
         usage.append(" ").append(usages.get(i));
