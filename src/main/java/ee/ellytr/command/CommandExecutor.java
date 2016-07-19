@@ -18,7 +18,6 @@ package ee.ellytr.command;
 
 import ee.ellytr.command.argument.Argument;
 import ee.ellytr.command.argument.ArgumentContext;
-import ee.ellytr.command.exception.CommandArgumentException;
 import ee.ellytr.command.exception.CommandConsoleException;
 import ee.ellytr.command.exception.CommandException;
 import ee.ellytr.command.exception.CommandNestedException;
@@ -30,7 +29,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
@@ -66,13 +64,17 @@ public class CommandExecutor {
     CommandContext context = new CommandContext(sender, args);
 
     List<CommandInstance> instances = new ArrayList<>();
-    boolean outOfRange = false, noPermission = false,
-        consoleNoUse = false, playerNoUse = false, invalidArgument = false;
-    ArgumentContext invalid = null;
+    boolean noPermission = false, consoleNoUse = false,
+        playerNoUse = false, tooFewArguments = false, tooManyArguments = false;
+    ArgumentContext invalidArgument = null;
     for (CommandInstance instance : command.getInstances()) {
       int argsLength = args.length;
-      if (argsLength < instance.getMin() && argsLength > instance.getMax()) {
-        outOfRange = true;
+      if (argsLength < instance.getMin()) {
+        tooFewArguments = true;
+        continue;
+      }
+      if (argsLength > instance.getMax()) {
+        tooManyArguments = true;
         continue;
       }
       boolean console = instance.isConsole(), player = instance.isPlayer();
@@ -101,39 +103,51 @@ public class CommandExecutor {
       if (match.hasOverflow()) {
         ArgumentContext currentInvalid = null;
         for (ArgumentContext argument : match.getMatches()) {
-          if (argument.getMatch() == null) {
-            if (currentInvalid == null) {
-              currentInvalid = argument;
-            } else {
-              currentInvalid = null;
-              break;
-            }
+          if (argument.getMatch() == null && (argument.getArgument().isRequired() && argument.isPresent())) {
+            currentInvalid = argument;
+            break;
           }
         }
         if (currentInvalid != null) {
-          invalidArgument = true;
-          invalid = currentInvalid;
+          invalidArgument = currentInvalid;
+        } else {
+          tooManyArguments = true;
+        }
+        continue;
+      } else {
+        for (ArgumentContext argument : match.getMatches()) {
+          if (argument.getMatch() == null && argument.getArgument().isRequired()) {
+            skip = true;
 
+            if (!argument.isPresent()) {
+              tooFewArguments = true;
+            }
+          }
+        }
+        if (skip) {
           continue;
         }
-
-        continue;
       }
+
       instances.add(instance);
     }
     if (instances.isEmpty()) {
-      if (invalidArgument) {
-        throw new CommandArgumentException(invalid);
-      } else if (playerNoUse) {
+      if (playerNoUse) {
         throw new CommandPlayerException();
       } else if (consoleNoUse) {
         throw new CommandConsoleException();
       } else if (noPermission) {
         throw new CommandPermissionException();
-      } else if (outOfRange) {
-        throw new CommandUsageException();
+      } else if (invalidArgument != null) {
+        throw new CommandUsageException(CommandUsageException.Error.INVALID_ARGUMENTS, invalidArgument);
       } else {
-        throw new CommandUsageException();
+        CommandUsageException.Error error = CommandUsageException.Error.INVALID_USAGE;
+        if (tooFewArguments && !tooManyArguments) {
+          error = CommandUsageException.Error.TOO_FEW_ARGUMENTS;
+        } else if (tooManyArguments && !tooFewArguments) {
+          error = CommandUsageException.Error.TOO_MANY_ARGUMENTS;
+        }
+        throw new CommandUsageException(error, null);
       }
     }
     CommandContext cmd = new CommandContext(sender, args);

@@ -101,17 +101,19 @@ public class Argument<T> {
   private static void handleInvalidArgument(
       @NonNull List<ArgumentContext> matches, @NonNull Argument argument, @NonNull CommandSender sender, boolean present) {
     if (argument.isRequired()) {
-      matches.add(new ArgumentContext(null, argument, false));
+      matches.add(new ArgumentContext(null, argument, present));
     } else {
       String defaultValue = argument.getDefaultValue();
       if (!defaultValue.equals("")) {
         try {
-          matches.add(new ArgumentContext(argument.getProvider().getMatch(defaultValue, sender), argument, false));
+          matches.add(new ArgumentContext(
+              present ? null : argument.getProvider().getMatch(defaultValue, sender), argument, present
+          ));
         } catch (Exception e) {
-          matches.add(new ArgumentContext(null, argument, false));
+          matches.add(new ArgumentContext(null, argument, present));
         }
       } else {
-        matches.add(new ArgumentContext(null, argument, false));
+        matches.add(new ArgumentContext(null, argument, present));
       }
     }
   }
