@@ -41,7 +41,7 @@ public class Collections {
     return null;
   }
 
-  public static String[] removeFirstArgument(@NonNull String[] array) {
+  public static String[] removeFirstNode(@NonNull String[] array) {
     int length = array.length;
 
     if (length == 0) {
@@ -55,7 +55,7 @@ public class Collections {
     return to;
   }
 
-  public static String[] removeLastArgument(@NonNull String[] array) {
+  public static String[] removeLastNode(@NonNull String[] array) {
     int length = array.length;
 
     if (length == 0) {

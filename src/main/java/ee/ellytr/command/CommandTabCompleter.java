@@ -53,7 +53,7 @@ public class CommandTabCompleter implements TabCompleter {
 
       boolean allArgumentsPresent = true;
       CommandMatch match = Argument.matchArguments(
-          instance, new CommandContext(sender, Collections.removeLastArgument(args))
+          instance, new CommandContext(sender, Collections.removeLastNode(args))
       );
       if (match.hasOverflow()) {
         continue;
@@ -96,14 +96,16 @@ public class CommandTabCompleter implements TabCompleter {
         suggestions.add(nestedCommand.getName());
       } else if (argsLength > 1 && nestedCommand.getName().equalsIgnoreCase(argument)) {
         suggestions.addAll(nestedCommand.getTabCompleter().onTabComplete(sender, cmd, alias,
-            Collections.removeFirstArgument(args)));
+            Collections.removeFirstNode(args)));
       }
     }
 
     for (CommandInstance instance : instances) {
-      suggestions.addAll(
-          instance.getArguments().get(argsLength - 1).getProvider().getSuggestions(args[argsLength - 1], sender)
-      );
+      List<String> instanceSuggestions = instance.getArguments().get(argsLength - 1).getProvider()
+          .getSuggestions(args[argsLength - 1], sender);
+      if (instanceSuggestions != null) {
+        suggestions.addAll(instanceSuggestions);
+      }
     }
 
     return suggestions;

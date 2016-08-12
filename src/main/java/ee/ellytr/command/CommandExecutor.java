@@ -25,6 +25,7 @@ import ee.ellytr.command.exception.CommandPermissionException;
 import ee.ellytr.command.exception.CommandPlayerException;
 import ee.ellytr.command.exception.CommandUsageException;
 import ee.ellytr.command.util.Collections;
+import ee.ellytr.command.util.MatchError;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -53,75 +54,102 @@ public class CommandExecutor {
 
   private void execute(EllyCommand command, CommandSender sender, String[] args) throws CommandException {
     // Execute any valid nested commands
-    if (args.length > 0) {
+    int argsLength = args.length;
+
+    if (argsLength > 0) {
       EllyCommand nestedCommand = Collections.getCommand(command.getNestedCommands(), args[0]);
       if (nestedCommand != null) {
-        execute(nestedCommand, sender, Collections.removeFirstArgument(args));
+        execute(nestedCommand, sender, Collections.removeFirstNode(args));
         return;
       }
     }
 
-    CommandContext context = new CommandContext(sender, args);
-
     List<CommandInstance> instances = new ArrayList<>();
-    boolean noPermission = false, consoleNoUse = false,
-        playerNoUse = false, tooFewArguments = false, tooManyArguments = false;
+
+    MatchError error = null;
     ArgumentContext invalidArgument = null;
+    CommandContext cmd = new CommandContext(sender, args);
     for (CommandInstance instance : command.getInstances()) {
-      int argsLength = args.length;
-      if (argsLength < instance.getMin()) {
-        tooFewArguments = true;
-        continue;
-      }
-      if (argsLength > instance.getMax()) {
-        tooManyArguments = true;
-        continue;
-      }
       boolean console = instance.isConsole(), player = instance.isPlayer();
       if (console || player) {
         if (!player && sender instanceof Player) {
-          playerNoUse = true;
+          if (error == null || MatchError.PLAYER_NO_ACCESS.isPrioritizedOver(error)) {
+            error = MatchError.PLAYER_NO_ACCESS;
+          }
           continue;
         }
         if (!console && sender instanceof ConsoleCommandSender) {
-          consoleNoUse = true;
+          if (error == null || MatchError.CONSOLE_NO_ACCESS.isPrioritizedOver(error)) {
+            error = MatchError.CONSOLE_NO_ACCESS;
+          }
           continue;
         }
       }
+
       boolean skip = false;
       for (String permission : instance.getPermissions()) {
         if (!sender.hasPermission(permission)) {
-          noPermission = true;
+          if (error == null || MatchError.NO_PERMISSION.isPrioritizedOver(error)) {
+            error = MatchError.NO_PERMISSION;
+          }
           skip = true;
+          break;
         }
       }
       if (skip) {
         continue;
       }
 
-      CommandMatch match = Argument.matchArguments(instance, context);
-      if (match.hasOverflow()) {
-        ArgumentContext currentInvalid = null;
-        for (ArgumentContext argument : match.getMatches()) {
-          if (argument.getMatch() == null && (argument.getArgument().isRequired() && argument.isPresent())) {
-            currentInvalid = argument;
-            break;
-          }
-        }
-        if (currentInvalid != null) {
-          invalidArgument = currentInvalid;
-        } else {
-          tooManyArguments = true;
+      if (argsLength < instance.getMin()) {
+        if (error == null || MatchError.TOO_FEW_ARGUMENTS.isPrioritizedOver(error)) {
+          error = MatchError.TOO_FEW_ARGUMENTS;
         }
         continue;
-      } else {
-        for (ArgumentContext argument : match.getMatches()) {
-          if (argument.getMatch() == null && argument.getArgument().isRequired()) {
-            skip = true;
+      }
+      if (argsLength > instance.getMax()) {
+        if (error == null || MatchError.TOO_MANY_ARGUMENTS.isPrioritizedOver(error)) {
+          error = MatchError.TOO_MANY_ARGUMENTS;
+        }
+        continue;
+      }
 
-            if (!argument.isPresent()) {
-              tooFewArguments = true;
+      CommandMatch match = Argument.matchArguments(instance, cmd);
+      if (match.hasOverflow()) {
+        ArgumentContext invalid = null;
+        for (ArgumentContext context : match.getMatches()) {
+          if (context.getMatch() == null && context.getArgument().isRequired()) {
+            invalid = context;
+          }
+        }
+        if (invalid == null) {
+          for (ArgumentContext context : match.getMatches()) {
+            if (context.getMatch() == null) {
+              invalid = context;
             }
+          }
+        }
+        if (invalid == null) {
+          if (error == null || MatchError.TOO_MANY_ARGUMENTS.isPrioritizedOver(error)) {
+            error = MatchError.TOO_MANY_ARGUMENTS;
+            continue;
+          }
+        } else {
+          if (error == null || MatchError.INVALID_ARGUMENTS.isPrioritizedOver(error)) {
+            error = MatchError.INVALID_ARGUMENTS;
+            invalidArgument = invalid;
+            continue;
+          }
+        }
+      } else {
+        for (ArgumentContext context : match.getMatches()) {
+          if (context == null && context.getArgument().isRequired()) {
+            skip = true;
+            if (!context.isPresent()) {
+              if (error == null || MatchError.TOO_FEW_ARGUMENTS.isPrioritizedOver(error)) {
+                error = MatchError.TOO_FEW_ARGUMENTS;
+              }
+            }
+            break;
           }
         }
         if (skip) {
@@ -131,29 +159,31 @@ public class CommandExecutor {
 
       instances.add(instance);
     }
+
     if (instances.isEmpty()) {
-      if (playerNoUse) {
-        throw new CommandPlayerException();
-      } else if (consoleNoUse) {
-        throw new CommandConsoleException();
-      } else if (noPermission) {
-        throw new CommandPermissionException();
-      } else if (invalidArgument != null) {
-        throw new CommandUsageException(CommandUsageException.Error.INVALID_ARGUMENTS, invalidArgument);
-      } else {
-        CommandUsageException.Error error = CommandUsageException.Error.INVALID_USAGE;
-        if (tooFewArguments && !tooManyArguments) {
-          error = CommandUsageException.Error.TOO_FEW_ARGUMENTS;
-        } else if (tooManyArguments && !tooFewArguments) {
-          error = CommandUsageException.Error.TOO_MANY_ARGUMENTS;
-        }
-        throw new CommandUsageException(error, null);
+      switch (error) {
+        case CONSOLE_NO_ACCESS:
+          throw new CommandConsoleException();
+        case PLAYER_NO_ACCESS:
+          throw new CommandPlayerException();
+        case NO_PERMISSION:
+          throw new CommandPermissionException();
+        case TOO_FEW_ARGUMENTS:
+          throw new CommandUsageException(MatchError.TOO_FEW_ARGUMENTS, null);
+        case TOO_MANY_ARGUMENTS:
+          throw new CommandUsageException(MatchError.TOO_MANY_ARGUMENTS, null);
+        case INVALID_USAGE:
+          throw new CommandUsageException(MatchError.INVALID_USAGE, null);
+        case INVALID_ARGUMENTS:
+          throw new CommandUsageException(MatchError.INVALID_ARGUMENTS, invalidArgument);
+        default:
+          throw new CommandException();
       }
     }
-    CommandContext cmd = new CommandContext(sender, args);
+
     if (executeAllValidInstances) {
       for (CommandInstance instance : instances) {
-        List<Object> parameters = toParameters(Argument.matchArguments(instance, context).getMatches());
+        List<Object> parameters = toParameters(Argument.matchArguments(instance, cmd).getMatches());
         parameters.add(0, cmd);
         try {
           instances.get(0).getMethod().invoke(null, parameters);
@@ -173,7 +203,7 @@ public class CommandExecutor {
     } else {
       CommandInstance instance = instances.get(0);
 
-      List<Object> parameters = toParameters(Argument.matchArguments(instance, context).getMatches());
+      List<Object> parameters = toParameters(Argument.matchArguments(instance, cmd).getMatches());
       parameters.add(0, cmd);
 
       try {

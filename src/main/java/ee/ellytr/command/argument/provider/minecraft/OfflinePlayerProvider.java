@@ -41,6 +41,7 @@ public class OfflinePlayerProvider implements ArgumentProvider<OfflinePlayer> {
     if (uuid) {
       return Bukkit.getOfflinePlayer(UUID.fromString(in));
     }
+
     return Bukkit.getPlayer(in);
   }
 

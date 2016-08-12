@@ -23,6 +23,7 @@ import ee.ellytr.command.CommandMatch;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
 import java.lang.annotation.Annotation;
@@ -81,12 +82,32 @@ public class Argument<T> {
         handleInvalidArgument(matches, argument, sender, false);
       } else {
         try {
-          Object match = provider.getMatch(input.get(0), sender);
+          int inputSize = input.size();
+          if (inputSize < argument.getMin()) {
+            handleInvalidArgument(matches, argument, sender, false);
+          }
+
+          int argsCount = 0;
+          StringBuilder in = new StringBuilder();
+          for (int j = 0; j < argument.getMax(); j++) {
+            if (j < inputSize) {
+              in.append(input.get(j)).append(" ");
+              argsCount++;
+            } else {
+              break;
+            }
+          }
+
+          Bukkit.broadcastMessage(in.toString());
+
+          Object match = provider.getMatch(in.toString().trim(), sender);
           if (match == null) {
             handleInvalidArgument(matches, argument, sender, true);
           } else {
             matches.add(new ArgumentContext(match, argument, true));
-            input.remove(0);
+            for (int j = 0; j < argsCount; j++) {
+              input.remove(0);
+            }
           }
         } catch (Exception e) {
           handleInvalidArgument(matches, argument, sender, true);

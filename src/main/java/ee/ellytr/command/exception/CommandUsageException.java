@@ -17,6 +17,7 @@
 package ee.ellytr.command.exception;
 
 import ee.ellytr.command.argument.ArgumentContext;
+import ee.ellytr.command.util.MatchError;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -28,14 +29,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CommandUsageException extends CommandException {
 
-  private final Error error;
+  private final MatchError error;
   private final ArgumentContext invalidArgument;
-
-  public enum Error {
-    TOO_FEW_ARGUMENTS,
-    TOO_MANY_ARGUMENTS,
-    INVALID_ARGUMENTS,
-    INVALID_USAGE
-  }
 
 }

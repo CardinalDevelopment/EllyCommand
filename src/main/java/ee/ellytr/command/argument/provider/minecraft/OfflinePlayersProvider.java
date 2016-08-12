@@ -78,7 +78,12 @@ public class OfflinePlayersProvider implements ArgumentProvider<OfflinePlayers> 
           }
         }
       } else {
-        players.add(Bukkit.getPlayer(in));
+        Player player = Bukkit.getPlayer(in);
+        if (player != null) {
+          players.add(player);
+        } else {
+          players.add(Bukkit.getOfflinePlayer(in));
+        }
       }
     }
 
