@@ -23,7 +23,6 @@ import ee.ellytr.command.CommandMatch;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
 import java.lang.annotation.Annotation;
@@ -97,8 +96,6 @@ public class Argument<T> {
               break;
             }
           }
-
-          Bukkit.broadcastMessage(in.toString());
 
           Object match = provider.getMatch(in.toString().trim(), sender);
           if (match == null) {
